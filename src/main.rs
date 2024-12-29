@@ -63,15 +63,23 @@ fn main() {
         else { print!("{} - ",ByteSize(metadata.len()).to_string_as(true));}
         // TODO: proper handling of inaccessible time
         let created_time : OffsetDateTime = metadata.created().unwrap_or(SystemTime::now()).into();
+        let modified_time : OffsetDateTime = metadata.modified().unwrap_or(SystemTime::now()).into();
         let accessed_time : OffsetDateTime = metadata.accessed().unwrap_or(SystemTime::now()).into();
+        
         print!("created: {:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2} - ", created_time.year(), created_time.month() as u8, created_time.day(), created_time.hour(), created_time.minute(), created_time.second());
+        print!("last modified: {:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2} - ", modified_time.year(), modified_time.month() as u8, modified_time.day(), modified_time.hour(), modified_time.minute(), modified_time.second());
         print!("last accessed: {:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2} - ", accessed_time.year(), accessed_time.month() as u8, accessed_time.day(), accessed_time.hour(), accessed_time.minute(), accessed_time.second());
         
         if metadata.permissions().readonly() { println!("readonly");} 
-        else { println!("read&writeable");}
+        else { print!("read&writeable - ");}
 
         if is_zip_file {
             let mut archive = zip::ZipArchive::new(buf_reader).unwrap();
+            // TODO: test it properly 
+            if !archive.comment().is_empty() {
+                print!("comment: {:?} - ", archive.comment());
+            }
+
             println!("Zip file contains:");
             for i in 0..archive.len() {
                 let file = archive.by_index(i).unwrap();
