@@ -1,12 +1,15 @@
 [package]
-name = "wot-save-editor"
+name = "file_analysis_tool"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bytesize = "1.3.0"
+clap = { version = "4.5.23"}
 # For providing paths to standard directories according to os rules/conventions
 dirs-next = "2.0.0"
 # Cross-platform bindings for interface, bundled libs
 fltk = { version = "^1.5", features = ["fltk-bundled"]}
+time = "0.3.37"
