@@ -1,10 +1,11 @@
 extern crate bytesize;
-
-use std::{env, fs, time::SystemTime};
+use std::io::{prelude::*, BufReader};
+use std::{env, ffi::OsStr, fs, time::SystemTime};
 use clap::{Arg, ArgAction, Command};
 use fltk::{app, button::Button, frame::Frame, prelude::*, window::Window};
 use bytesize::ByteSize;
 use time::OffsetDateTime;
+
 fn main() {
     let m = Command::new("File Analysis Tool")
         .author("caffidev, caffidev@gmail.com")
@@ -36,6 +37,9 @@ fn main() {
         )
         .after_help("This app was written to analyze files, and give as much info about it as possible")
         .get_matches();
+    
+    let is_debug : bool = m.get_flag("debug");
+    let is_human : bool = m.get_flag("human");
 
     let app = app::App::default();
     let mut wind = Window::new(100, 100, 400, 300, "ETS2 save editor v0.1.1");
@@ -49,9 +53,13 @@ fn main() {
     println!("{:?}",zip_path);
     if zip_path.exists() && zip_path.is_file() {
         print!("{} - ",zip_path.file_name().unwrap().to_string_lossy());
+        // If file is zip (currently guaranteed)
+        let is_zip_file: bool = zip_path.extension().unwrap_or(OsStr::new("")).eq("zip");
+        let buf_reader : BufReader<fs::File>;
+        buf_reader = BufReader::new(fs::File::open(&zip_path).unwrap());
         let metadata = fs::metadata(zip_path).unwrap();
 
-        if !m.get_flag("human") {println!("{:?}", metadata.len())}
+        if !is_human {println!("{:?}", metadata.len())}
         else { print!("{} - ",ByteSize(metadata.len()).to_string_as(true));}
         // TODO: proper handling of inaccessible time
         let created_time : OffsetDateTime = metadata.created().unwrap_or(SystemTime::now()).into();
@@ -61,6 +69,50 @@ fn main() {
         
         if metadata.permissions().readonly() { println!("readonly");} 
         else { println!("read&writeable");}
+
+        if is_zip_file {
+            let mut archive = zip::ZipArchive::new(buf_reader).unwrap();
+            println!("Zip file contains:");
+            for i in 0..archive.len() {
+                let file = archive.by_index(i).unwrap();
+                let outpath = match file.enclosed_name() {
+                    Some(path) => path,
+                    None => {
+                        println!("Entry {} has a suspicious path", file.name());
+                        continue;
+                    }
+                };
+                
+                // Comment scope
+                {
+                    let comment = file.comment();
+                    let name = file.name();
+                    if !comment.is_empty() {
+                        println!("File {name} has comment: {comment}");
+                    }
+                }
+        
+                if file.is_dir() {
+                    println!(
+                        "\"{}\"",
+                        outpath.display()
+                    );
+                } else {
+                    let file_size : String;
+                    if is_human {
+                        file_size = ByteSize(file.size()).to_string_as(true);
+                    }
+                    else {
+                        file_size = file.size().to_string();
+                    }
+                    println!(
+                        "\"{}\" ({})",
+                        outpath.display(),
+                        file_size
+                    );
+                }
+            }
+        }
     }
 
     app.run().unwrap();
