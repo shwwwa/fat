@@ -26,7 +26,7 @@ id = "rar"
 extension = "rar"
 name = "RAR Compression File (Roshal Archive)"
 category = "archive"
-description = """RAR (Roshal Archive) is a compressed archive format used by the compression software RAR and WinRAR. It was originally for DOS, but has been widely used on Windows (as WinRAR) and other platforms.
+description = """RAR (Roshal Archive) is a compressed archive format used by the compression software RAR and WinRAR. It was originally for DOS, but now used in RAR and WINRAR.
 The developers make the decompression code available for use in other programs and allow its distribution, but with a license provision that "You cannot use the unrar source to re-create the RAR compression algorithm, which is proprietary. """
 further_reading = "http://fileformats.archiveteam.org/wiki/RAR"
 preferred_mime = "application/x-rar-compressed"
@@ -42,6 +42,96 @@ description = """An extension for 3D modeling and design tool suite, were renown
 further_reading = "https://www.autodesk.com/solutions/123d-apps"
 preferred_mime = "model/x-123dx"
 mime = ["model/x-123dx"]
+
+[[extensions]]
+id = "cddx"
+extension = "cddx"
+name = "Circuit Diagram Document"
+category = "diagram"
+description = """The Circuit Diagram Document format is designed for storing electronic circuit designs."""
+further_reading = "https://www.circuit-diagram.org/docs/cddx"
+preferred_mime = "application/vnd.circuitdiagram.document.main+xml"
+mime = ["application/vnd.circuitdiagram.document.main+xml"]
+
+[[extensions]]
+id = "dwf"
+extension = "dwf"
+name = "Design Web Format"
+category = "model"
+description = """File format developed by Autodesk for the efficient distribution and communication of rich design data to anyone who needs to view, review, or print design files."""
+further_reading = "https://en.wikipedia.org/wiki/Design_Web_Format"
+preferred_mime = "model/vnd.dwf"
+mime = ["model/vnd.dwf"]
+
+[[extensions]]
+id = "dwfx"
+extension = "dwfx"
+name = "Design Web Format XPS"
+category = "model"
+description = """File format developed by Autodesk for the efficient distribution and communication of rich design data to anyone who needs to view, review, or print design files. Has microsoft xps document in it."""
+further_reading = "https://en.wikipedia.org/wiki/Design_Web_Format"
+preferred_mime = "model/vnd.dwfx+xps"
+mime = ["model/vnd.dwfx+xps"]
+
+[[extensions]]
+id = "fb2"
+extension = "fb2"
+name = "FictionBook"
+category = "ebook"
+description = """FictionBook books."""
+further_reading = "http://www.fictionbook.org/index.php/FictionBook"
+preferred_mime = "application/x-fb2+xml"
+mime = ["application/x-fb2+xml"]
+
+[[extensions]]
+id = "fbz"
+extension = "fbz"
+name = "FictionBook ZIP"
+category = "ebook"
+description = """FictionBook books bundled in a zip."""
+further_reading = "http://www.fictionbook.org/index.php/FictionBook"
+preferred_mime = "application/x-fbz"
+mime = ["application/x-fb"]
+
+[[extensions]]
+id = "fusion360"
+extension = "f3d"
+name = "Fusion 360"
+category = "model"
+description = """This file is for Autodesk Fusion, a commercial computer-aided design (CAD), computer-aided manufacturing (CAM), computer-aided engineering (CAE) and printed circuit board (PCB) design software application, developed by Autodesk."""
+further_reading = "https://en.wikipedia.org/wiki/Fusion_360"
+preferred_mime = "model/x-f3d"
+mime = ["model/x-f3d"]
+
+[[extensions]]
+id = "ipa"
+extension = "ipa"
+name = "iOS App Store Package"
+category = "package"
+description = """A .ipa file is an iOS and iPadOS application zip archive file which stores an iOS/iPadOS app in a bundle format. """
+further_reading = "https://en.wikipedia.org/wiki/.ipa"
+preferred_mime = "application/x-ios-app"
+mime = ["application/x-ios-app"]
+
+[[extensions]]
+id = "ooxmldocument"
+extension = "docx"
+name = "Office Open XML Document"
+category = "document"
+description = """Office Open XML (also informally known as OOXML)[5] is a zipped, XML-based file format developed by Microsoft for representing spreadsheets, charts, presentations and word processing documents."""
+further_reading = "https://en.wikipedia.org/wiki/Office_Open_XML"
+preferred_mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+mime = ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+
+[[extensions]]
+id = "ooxmldrawing"
+extension = "vsdx"
+name = "Office Open XML Drawing"
+category = "diagram"
+description = """Office Open XML (also informally known as OOXML)[5] is a zipped, XML-based file format developed by Microsoft for representing spreadsheets, charts, presentations and word processing documents."""
+further_reading = "https://en.wikipedia.org/wiki/Office_Open_XML"
+preferred_mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+mime = ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
 
 # found in zip files
 [[extensions]]

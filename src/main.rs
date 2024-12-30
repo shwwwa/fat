@@ -2,17 +2,17 @@ extern crate bytesize;
 
 use fltk::app::quit;
 use fltk::{app, button::Button, frame::Frame, prelude::*, window::Window};
+use zip::{CompressionMethod, DateTime};
+use unrar::{ListSplit, VolumeInfo};
 use clap::{Arg, arg, ArgAction, Command};
-use bytesize::ByteSize;
 use strum_macros::{EnumString, IntoStaticStr};
 use serde::{Deserializer, Deserialize};
 use serde_derive::Deserialize;
+use bytesize::ByteSize;
 use time::OffsetDateTime;
-use unrar::{ListSplit, VolumeInfo};
-use zip::{CompressionMethod, DateTime};
-use std::str::FromStr;
 use std::{env, ffi::OsStr, fs, fs::File, time::SystemTime, path::PathBuf};
 use std::io::{BufReader, Error};
+use std::str::FromStr;
 
 /// The difference with file-format lib is that we need as much accurate representation of types as possible,
 /// whereas in file_format categories used for quick choice of formats needed for application (why do you need other file's backups for regular app?).
@@ -87,6 +87,16 @@ enum Category {
     Video,
 }
 
+impl<'de> Deserialize<'de> for Category {
+    fn deserialize<D>(de: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let category = String::deserialize(de)?;
+        Ok(Category::from_str(&category).unwrap_or(Category::Other))
+    }
+}
+
 #[derive(Deserialize, Debug)]
 struct Extension {
     #[allow(dead_code)]
@@ -105,15 +115,6 @@ struct ExtensionVec {
     extensions: Vec<Extension>,
 }
 
-impl<'de> Deserialize<'de> for Category {
-    fn deserialize<D>(de: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let category = String::deserialize(de)?;
-        Ok(Category::from_str(&category).unwrap_or(Category::Other))
-    }
-}
 struct Arguments {
     file_path: PathBuf,
     extensions_path: PathBuf,
@@ -200,6 +201,7 @@ fn get_general_info(args: &Arguments){
     if metadata.permissions().readonly() { println!("Readonly");} 
     else { println!("# Readable and writable");}
 }
+
 /// Contain extension data as global to minimize calls --- TODO URGENT
 fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
     let extensions_str = match fs::read_to_string(args.extensions_path.clone()) {
@@ -220,7 +222,6 @@ fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
 }
 
 fn get_extension_info(args: & Arguments, extension: String) {
-
     println!("## Extension: {}", extension);
     let extensions_str = match fs::read_to_string(args.extensions_path.clone()) {
         Ok(c) => c,
@@ -414,7 +415,7 @@ fn get_info(args: &Arguments) {
 
     let buf_reader : BufReader<fs::File> = BufReader::new(fs::File::open(&args.file_path).unwrap());
     get_extension_info(args, extension);
-    // Specific use-cases
+    // Specific use-cases (even works for specific files like .apk for listing files)
     if !args.only_general { 
         if file_extension.eq("zip") { get_zip_info(args, buf_reader) }
         else if file_extension.eq("rar") { get_rar_info(args) };
