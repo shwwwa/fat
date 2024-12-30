@@ -6,7 +6,7 @@ description = """ZIP is one of the most popular file compression formats. It was
 This resulted in Katz creating a new file format, which rapidly overtook ARC in popularity (to a large extent because of BBS sysops, then the primary users of such compression, resenting the lawsuit). Many programs have been released for a variety of operating systems to compress and decompress ZIP files, and native support for the format is built into several popular operating systems."""
 further_reading = "http://fileformats.archiveteam.org/wiki/ZIP"
 preferred_mime = "application/zip-compressed"
-mime = ["application/zip", "application/zip-compressed", "application/x-zip-compressed"]
+mime = ["application/zip", "application/octet-stream", "application/zip-compressed", "application/x-zip-compressed"]
 
 [[extensions]]
 extension = "ivs"

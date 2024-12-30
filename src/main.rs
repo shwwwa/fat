@@ -96,10 +96,16 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
         println!("# Comment: {:?}", std::str::from_utf8(archive.comment()).unwrap());
     }
 
-    print!("# Decompressed size: ");
+    print!("# Compressed size: ");
+    let size : u64 = fs::metadata(args.file_path.clone()).unwrap().len();
     let decompressed_size : u64 = archive.decompressed_size().unwrap_or(0).try_into().unwrap();
-    if args.is_human { println!("{}", ByteSize(decompressed_size).to_string_as(true))}
-    else { println!("{}", decompressed_size); }
+    let percent = (size as f32 / decompressed_size as f32)*100.;
+    if args.is_human { println!("{}/{} ({:.2}%)", 
+        ByteSize(size).to_string_as(true),
+        ByteSize(decompressed_size).to_string_as(true),
+        percent
+    )}
+    else { println!("{}/{} ({:.2}%)",size, decompressed_size, percent) ; }
     
     println!("# Zip file contains:");
     for i in 0..archive.len() {
@@ -127,11 +133,22 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
                 outpath.display()
             );
         } else {
+            let percent = format!("{:.prec$}", (file.compressed_size() as f32 / file.size() as f32) * 100., prec = 2).to_string();
             let file_size : String = if args.is_human {
-                ByteSize(file.size()).to_string_as(true)
+                ByteSize(file.compressed_size()).to_string_as(true) +
+                "/" +
+                &ByteSize(file.size()).to_string_as(true) +
+                ") (" +
+                &percent +
+                "%"
             }
             else {
-                file.size().to_string()
+                file.compressed_size().to_string() +
+                "/" +
+                &file.size().to_string() +
+                ") (" +
+                &percent +
+                "%"
             };
 
             println!(
@@ -148,11 +165,11 @@ fn get_info(args: &Arguments) {
     if !args.file_path.is_file() { println!("Path to file leads to directory, not file");}
 
     let file_extension: &std::ffi::OsStr = args.file_path.extension().unwrap_or(OsStr::new(""));
-
     let buf_reader : BufReader<fs::File> = BufReader::new(fs::File::open(&args.file_path).unwrap());
+    
     if !args.ignore_general {get_general_info(args)};
-
     get_extension_info(file_extension.to_str().unwrap_or(""), args.extension_info, &args.extensions_path);
+    // Specific use-cases
     if file_extension.eq("zip") && !args.only_general {get_zip_info(args, buf_reader) };
 
 }
