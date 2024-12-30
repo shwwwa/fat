@@ -1,0 +1,58 @@
+# Maybe do a thing with most common cases to sort? (by id, lower id, more common file)
+[[extensions]]
+extension = "zip"
+name = "ZIP Compression File"
+description = """ZIP is one of the most popular file compression formats. It was created in 1989 as the native format of the PKZIP program, which was introduced by Phil Katz in the wake of a lawsuit (which he lost) against him by the makers of the then-popular ARC program (and file format) for copyright and trademark infringement in an earlier program PKARC which had been file-compatible with ARC.
+This resulted in Katz creating a new file format, which rapidly overtook ARC in popularity (to a large extent because of BBS sysops, then the primary users of such compression, resenting the lawsuit). Many programs have been released for a variety of operating systems to compress and decompress ZIP files, and native support for the format is built into several popular operating systems."""
+further_reading = "http://fileformats.archiveteam.org/wiki/ZIP"
+preferred_mime = "application/zip-compressed"
+mime = ["application/zip", "application/zip-compressed", "application/x-zip-compressed"]
+
+[[extensions]]
+extension = "ivs"
+name = "IVS file format"
+description = """The IVS format is a device-independent haptic effect coding based on the XML format. It is designed to enable interoperability between distinct physical endpoints. Not all devices may be able to render all effects present in an IVS file."""
+further_reading = "https://www.iana.org/assignments/media-types/haptics/ivs"
+preferred_mime = "haptics/ivs"
+mime = ["haptics/ivs"]
+
+[[extensions]]
+extension = "hjif"
+name = "HJIF file format"
+description = """The HJIF format is a human-readable haptic effect coding based on the JSON format. It is designed as an interchange format for temporal and spatial haptic effects. The haptic effects may target specific parts of the human body and may be associated with a reference device description allowing haptic rendering software to adapt the effects to available hardware."""
+further_reading = "https://www.iana.org/assignments/media-types/haptics/hjif"
+preferred_mime = "haptics/hjif"
+mime = ["haptics/hjif"]
+
+[[extensions]]
+extension = "hmpg"
+name = "HMPG file format"
+description = """The HMPG format is a streamable binary haptic effect coding. It is designed to enable efficient coding of temporal and spatial haptic effects. The haptic effects may target specific parts of the human body and may be associated with a reference device description allowing haptic rendering software to adapt the effects to available hardware."""
+further_reading = "https://www.iana.org/assignments/media-types/haptics/hmpg"
+preferred_mime = "haptics/hmpg"
+mime = ["haptics/hmpg"]
+
+[[extensions]]
+extension = "MineSweeperSave-ms"
+name = "Minesweeper saved game"
+description = """The Windows 7 version of Minesweeper introduced a feature that allows you to save games to its own format. It ends with .MineSweeperSave-ms. (Maybe for Vista it also did the same?) """
+further_reading = "http://fileformats.archiveteam.org/wiki/Minesweeper_saved_game"
+preferred_mime = "application/unknown"
+mime = ["application/unknown"]
+
+[[extensions]]
+extension = "ba"
+name = "Baba Is You saved game"
+description = """Baba is You saved game files save various pieces of metadata about levelpacks that are played, most notably of which the bonuses, level wins, and world clears of each levelpack. The main four files used by the game are ba.ba, 0ba.ba, 1ba.ba, and 2ba.ba, although with a bit of hacking, the game can load 3ba.ba and beyond. Additionally, the game uses SettingsC.txt to store other metadata, such as general settings, controls, save file names, and data about the level editor. """
+further_reading = "http://fileformats.archiveteam.org/wiki/Baba_Is_You_saved_game"
+preferred_mime = "application/unknown"
+mime = ["application/unknown"]
+
+[[extensions]]
+extension = "sav"
+name = "Borderlands save file"
+description = """A Borderlands save file is a saved game for Borderlands. """
+further_reading = "http://fileformats.archiveteam.org/wiki/Borderlands_save_file"
+preferred_mime = "application/unknown"
+mime = ["application/unknown"]
+
