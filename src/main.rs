@@ -8,10 +8,79 @@ use serde_derive::Deserialize;
 use time::OffsetDateTime;
 use unrar::{ListSplit, VolumeInfo};
 use zip::{CompressionMethod, DateTime};
-use std::{env, ffi::OsStr, fs, time::SystemTime, path::PathBuf};
-use std::fs::File;
-use std::io::BufReader;
+use std::{env, ffi::OsStr, fs, fs::File, time::SystemTime, path::PathBuf};
+use std::io::{BufReader, Error, Read, Seek};
 
+/// The difference with file-format lib is that we need as much accurate representation of types as possible,
+/// whereas in file_format categories used for quick choice of formats needed for application (why do you need other file's backups for regular app?).
+enum Category {
+    /// Files and directories stored in a single, possibly compressed, archive .
+    Archive,
+    /// Music, sounds, recordings, identifiers of music, music trackers, ringtones, sound card related formats, speech synthesis.
+    Audio,
+    /// Backup files of applications
+    Backup,
+    /// Calendar type of files
+    Calendar,
+    /// Compressed single files or streams.
+    Compressed,
+    /// Configuration files.
+    Config,
+    /// Address books and contacts.
+    Contacts,
+    /// Electronic currencies e.g. bitcoin, gas.
+    Currency,
+    /// Organized collections of data.
+    Database,
+    /// Visual information using graphics and spatial relationships.
+    Diagram,
+    /// Floppy disk images, optical disc images and virtual machine disks.
+    Disk,
+    /// Word processing and desktop publishing documents.
+    Document,
+    /// Electronic books.
+    Ebook,
+    /// Machine-executable code, virtual machine code and shared libraries.
+    Executable,
+    /// Typefaces used for displaying text on screen or in print.
+    Font,
+    /// Mathematical formulas.
+    Formula,
+    /// Game data files (not configs, but saves fe.)
+    Gamedata,
+    /// Collections of geospatial features, GPS tracks and other location-related files.
+    Geospatial,
+    /// Haptic effect files
+    Haptics,
+    /// Help files, man pages, etc..
+    Help,
+    /// Animations, animated images, raster/vector graphics, icons, cursors.
+    Image,
+    /// Installer files
+    Installer,
+    /// Data that provide information about another data.
+    Metadata,
+    /// 3D images, CAD/CAM drawings, other type of files used for creating and displaying 3D images.
+    Model,
+    /// Agriculture, etc.. other types of files
+    Other,
+    /// Collections of files bundled together for easier distribution.
+    Package,
+    /// Lists of audio or video files, organized in a specific order for sequential playback.
+    Playlist,
+    /// Slideshows.
+    Presentation,
+    /// Copies of a read-only memory chip of computers, cartridges, or other electronic devices.
+    Rom,
+    /// Temporary application files
+    Temporary,
+    /// Data in tabular form.
+    Spreadsheet,
+    /// Annotation formats, subtitles and captions.
+    Subtitle,
+    /// Video stream/container formats, application formats, television broadcast formats.
+    Video,
+}
 
 #[derive(Deserialize, Debug)]
 struct Extension {
@@ -38,6 +107,11 @@ struct Arguments {
     extension_info: bool
 }
 
+/// Is
+fn is_zip<R: Read + Seek>(reader: R) -> Result<Category, Error> {
+    return Ok(Category::Archive);
+}
+
 fn get_general_info(args: &Arguments){
     println!("## General information:");
     println!("# Name: {}",args.file_path.file_name().unwrap().to_string_lossy());
@@ -58,7 +132,6 @@ fn get_general_info(args: &Arguments){
     if metadata.permissions().readonly() { println!("Readonly");} 
     else { println!("# Readable and writable");}
 }
-
 /// Contain extension data as global to minimize calls --- TODO URGENT
 fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
     let extensions_str = match fs::read_to_string(args.extensions_path.clone()) {
@@ -126,7 +199,7 @@ fn get_rar_info(args: &Arguments) {
             if let Some(error) = option {
                 // If the error's data field holds an OpenArchive, an error occurred while opening,
                 // the archive is partly broken (e.g. broken header), but is still readable from.
-                // In this example, we are still going to use the archive and list its contents.
+                // So we continue reading
                 println!("Error: {}, continuing.", error);
             }
             for entry in archive {
