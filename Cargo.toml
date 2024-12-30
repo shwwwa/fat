@@ -15,4 +15,7 @@ clap = { version = "4.5.23"}
 # Cross-platform bindings for GUI interface, bundled libs
 fltk = { version = "^1.5", features = ["fltk-bundled"]}
 zip = "2.2.2"
+toml = "0.8.19"
+serde = "1.0.217"
+serde_derive = "1.0.217"
 
