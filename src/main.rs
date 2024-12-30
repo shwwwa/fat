@@ -37,6 +37,27 @@ struct Arguments {
     extension_info: bool
 }
 
+fn get_general_info(args: &Arguments){
+    println!("## General information:");
+    println!("# Name: {}",args.file_path.file_name().unwrap().to_string_lossy());
+    
+    let metadata = fs::metadata(args.file_path.clone()).unwrap();
+
+    if !args.is_human {println!("# Size: {:?}", metadata.len())}
+    else { println!("# Size: {}",ByteSize(metadata.len()).to_string_as(true));}
+    // TODO: proper handling of inaccessible time
+    let created_time : OffsetDateTime = metadata.created().unwrap_or(SystemTime::now()).into();
+    let modified_time : OffsetDateTime = metadata.modified().unwrap_or(SystemTime::now()).into();
+    let accessed_time : OffsetDateTime = metadata.accessed().unwrap_or(SystemTime::now()).into();
+    
+    println!("# Created: {:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}", created_time.year(), created_time.month() as u8, created_time.day(), created_time.hour(), created_time.minute(), created_time.second());
+    println!("# Last modified: {:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}", modified_time.year(), modified_time.month() as u8, modified_time.day(), modified_time.hour(), modified_time.minute(), modified_time.second());
+    println!("# Last accessed: {:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}", accessed_time.year(), accessed_time.month() as u8, accessed_time.day(), accessed_time.hour(), accessed_time.minute(), accessed_time.second());
+    
+    if metadata.permissions().readonly() { println!("Readonly");} 
+    else { println!("# Readable and writable");}
+}
+
 /// Contain extension data as global to minimize calls --- TODO URGENT
 fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
     let extensions_str = match fs::read_to_string(args.extensions_path.clone()) {
@@ -88,29 +109,12 @@ fn get_extension_info(extension: &str, more_info: bool, extensions_path: &PathBu
     }
 }
 
-fn get_general_info(args: &Arguments){
-    println!("## General information:");
-    println!("# Name: {}",args.file_path.file_name().unwrap().to_string_lossy());
-    
-    let metadata = fs::metadata(args.file_path.clone()).unwrap();
-
-    if !args.is_human {println!("# Size: {:?}", metadata.len())}
-    else { println!("# Size: {}",ByteSize(metadata.len()).to_string_as(true));}
-    // TODO: proper handling of inaccessible time
-    let created_time : OffsetDateTime = metadata.created().unwrap_or(SystemTime::now()).into();
-    let modified_time : OffsetDateTime = metadata.modified().unwrap_or(SystemTime::now()).into();
-    let accessed_time : OffsetDateTime = metadata.accessed().unwrap_or(SystemTime::now()).into();
-    
-    println!("# Created: {:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}", created_time.year(), created_time.month() as u8, created_time.day(), created_time.hour(), created_time.minute(), created_time.second());
-    println!("# Last modified: {:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}", modified_time.year(), modified_time.month() as u8, modified_time.day(), modified_time.hour(), modified_time.minute(), modified_time.second());
-    println!("# Last accessed: {:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}", accessed_time.year(), accessed_time.month() as u8, accessed_time.day(), accessed_time.hour(), accessed_time.minute(), accessed_time.second());
-    
-    if metadata.permissions().readonly() { println!("Readonly");} 
-    else { println!("# Readable and writable");}
+fn get_rar_info(args: &Arguments, buf_reader: BufReader<File>) {
+    println!("## RAR information");
 }
 
 fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
-    println!("## Zip information");
+    println!("## ZIP information");
     let mut archive = zip::ZipArchive::new(buf_reader).unwrap();
     if !archive.comment().is_empty() {
         println!("# Comment: {:?}", std::str::from_utf8(archive.comment()).unwrap());
@@ -218,16 +222,18 @@ fn get_info(args: &Arguments) {
     if !args.ignore_general {get_general_info(args)};
     get_extension_info(file_extension.to_str().unwrap_or(""), args.extension_info, &args.extensions_path);
     // Specific use-cases
-    if file_extension.eq("zip") && !args.only_general {get_zip_info(args, buf_reader) };
-
+    if !args.only_general { 
+        if file_extension.eq("zip") { get_zip_info(args, buf_reader) }
+        else if file_extension.eq("rar") { get_rar_info(args, buf_reader) };
+    }
 }
 
 fn main() {
     // Console arguments
-    let m = Command::new("FAT-RS")
+    let m = Command::new("fat-rs")
         .author("caffidev, caffidev@gmail.com")
         .version("0.1.1")
-        .about("FAT-RS - File Analysis Tool, analyzes metadata and tries to guess its extension.")
+        .about("fat-rs - File Analysis Tool, analyzes metadata and tries to guess its extension.")
         .disable_help_subcommand(true)
         .disable_help_flag(true)
         .arg(arg!(<FILE> ... "File to analyze").value_parser(clap::value_parser!(PathBuf)))
