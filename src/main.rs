@@ -177,8 +177,7 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
                 &percent +
                 "%"
             };
-
-            println!(
+            print!(
                 "\"{}\" ({}) ({}) (last modified: {}) ({})",
                 outpath.display(),
                 file_size,
@@ -186,6 +185,10 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
                 last_modified,
                 file.crc32()
             );
+            if file.encrypted() {
+                print!(" (encrypted)");
+            }
+            println!();
         }
     }
     print!("# Compression methods used: ");
