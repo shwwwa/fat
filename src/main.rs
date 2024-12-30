@@ -169,19 +169,25 @@ fn main() {
         .disable_help_subcommand(true)
         .disable_help_flag(true)
         .arg(
-            Arg::new("debug")
-                .action(ArgAction::SetTrue)
-                .short('d')
-                .long("debug")
-                .help("Turns on debugging mode")
-        )
-        // Change help short flag to `?`
-        .arg(
             Arg::new("help")
                 .short('?')
                 .long("help")
                 .action(ArgAction::Help)
-                .help("Print help")
+                .help("Prints help (this message).")
+        )
+        .arg(
+            Arg::new("extension-info")
+            .action(ArgAction::SetTrue)
+                .short('e')
+                .long("extension-info")
+                .help("Provides more info about extension: MIME type, where to read about it etc..")
+        )
+        .arg(
+            Arg::new("debug")
+                .action(ArgAction::SetTrue)
+                .short('d')
+                .long("debug")
+                .help("Turns on debugging mode.")
         )
         .arg(
             Arg::new("human")
@@ -194,20 +200,13 @@ fn main() {
             Arg::new("ignore-general")
             .action(ArgAction::SetTrue)
                 .long("ignore-general")
-                .help("Provide only general info e.g name, size, when accessed...")
+                .help("Provides only general info e.g name, size, when accessed...")
         )
         .arg(
             Arg::new("only-general")
             .action(ArgAction::SetTrue)
                 .long("only-general")
-                .help("Provide only special info e.g basic extension info, special metadata of file.. (when with ignore-general provides only info of extension)")
-        )
-        .arg(
-            Arg::new("extension-info")
-            .action(ArgAction::SetTrue)
-                .short('e')
-                .long("extension-info")
-                .help("Provide more about extension - MIME type, where to read about it")
+                .help("Provide only special info e.g basic extension info, special metadata of file... (when with ignore-general provides only info of extension)")
         )
         .after_help("This app was written to analyze files, and give as much info about it as possible")
         .get_matches();

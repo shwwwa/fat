@@ -1,2 +1,2 @@
 # File Analysis Tool
-This app was written to analyze files, and give as much info about it as possible
+File Analysis Tool, fat-rs for short, is a tool to analyze metadata of files, tool to guess file's extension and what it is for.
