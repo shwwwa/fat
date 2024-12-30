@@ -5,6 +5,7 @@ use clap::{Arg, arg, ArgAction, Command};
 use bytesize::ByteSize;
 use serde_derive::Deserialize;
 use time::OffsetDateTime;
+use zip::CompressionMethod;
 use std::{env, ffi::OsStr, fs, time::SystemTime, path::PathBuf};
 use std::fs::File;
 use std::io::BufReader;
@@ -107,9 +108,15 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
     )}
     else { println!("{}/{} ({:.2}%)",size, decompressed_size, percent) ; }
     
+    // While we gather zip file information, gather also used compression methods
+    let mut compression_methods : Vec<CompressionMethod> = Vec::new();
     println!("# Zip file contains:");
     for i in 0..archive.len() {
         let file = archive.by_index(i).unwrap();
+        if !compression_methods.contains(&file.compression()) {
+            compression_methods.push(file.compression());
+        }
+
         let outpath = match file.enclosed_name() {
             Some(path) => path,
             None => {
@@ -158,6 +165,11 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
             );
         }
     }
+    print!("# Compression methods used: ");
+    for method in compression_methods.iter_mut() {
+        print!("{} ", method);
+    }
+    println!()
 }
 
 fn get_info(args: &Arguments) {
