@@ -119,7 +119,8 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
     print!("# Compressed size: ");
     let size : u64 = fs::metadata(args.file_path.clone()).unwrap().len();
     let decompressed_size : u64 = archive.decompressed_size().unwrap_or(0).try_into().unwrap();
-    let percent = (size as f32 / decompressed_size as f32)*100.;
+    let mut percent = (size as f32 / decompressed_size as f32)*100.;
+    if percent > 100. { percent = 100.}
     if args.is_human { println!("{}/{} ({:.2}%)", 
         ByteSize(size).to_string_as(true),
         ByteSize(decompressed_size).to_string_as(true),
@@ -131,7 +132,14 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
     let mut compression_methods : Vec<CompressionMethod> = Vec::new();
     println!("# Zip file contains:");
     for i in 0..archive.len() {
-        let file = archive.by_index(i).unwrap();
+        let file = match archive.by_index(i) {
+            Ok(file) => file,
+            Err(_) => {
+                println!("found encrypted file, not supported now");
+                continue;
+            }
+        };
+        
         if !compression_methods.contains(&file.compression()) {
             compression_methods.push(file.compression());
         }
@@ -160,7 +168,7 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
             );
         } else {
             let last_modified : DateTime = file.last_modified().unwrap_or_default();
-            let percent = format!("{:.prec$}", (file.compressed_size() as f32 / file.size() as f32) * 100., prec = 2).to_string();
+            let percent = format!("{:.prec$}", ((file.compressed_size() as f32 / file.size() as f32) * 100.).min(100.), prec = 2) .to_string();
             let file_size : String = if args.is_human {
                 ByteSize(file.compressed_size()).to_string_as(true) +
                 "/" +
@@ -185,6 +193,8 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
                 last_modified,
                 file.crc32()
             );
+            
+            // Unreachable for now
             if file.encrypted() {
                 print!(" (encrypted)");
             }
