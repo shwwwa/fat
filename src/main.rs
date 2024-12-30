@@ -148,14 +148,12 @@ fn get_info(args: &Arguments) {
     if !args.file_path.is_file() { println!("Path to file leads to directory, not file");}
 
     let file_extension: &std::ffi::OsStr = args.file_path.extension().unwrap_or(OsStr::new(""));
-    // If file is zip todo: correct
-    let is_zip_file: bool = file_extension.eq("zip");
 
     let buf_reader : BufReader<fs::File> = BufReader::new(fs::File::open(&args.file_path).unwrap());
     if !args.ignore_general {get_general_info(args)};
 
     get_extension_info(file_extension.to_str().unwrap_or(""), args.extension_info, &args.extensions_path);
-    if is_zip_file && !args.only_general {get_zip_info(args, buf_reader) };
+    if file_extension.eq("zip") && !args.only_general {get_zip_info(args, buf_reader) };
 
 }
 
