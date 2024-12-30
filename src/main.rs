@@ -162,10 +162,10 @@ fn get_info(args: &Arguments, path: &PathBuf, extensions_path: &PathBuf) {
 
 fn main() {
     // Console arguments
-    let m = Command::new("File Analysis Tool")
+    let m = Command::new("FAT-RS")
         .author("caffidev, caffidev@gmail.com")
         .version("0.1.1")
-        .about("FAT - File Analysis Tool, analyzes file, tries to guess its extension etc..")
+        .about("FAT-RS - File Analysis Tool, analyzes metadata and tries to guess its extension.")
         .disable_help_subcommand(true)
         .disable_help_flag(true)
         .arg(
@@ -188,7 +188,7 @@ fn main() {
             .action(ArgAction::SetTrue)
                 .short('h')
                 .long("human")
-                .help("Prints numbers in human-readable way (124K, 76M)")
+                .help("Prints numbers in human-readable way (124 kiB, 76 miB)")
         )
         .arg(
             Arg::new("ignore-general")
@@ -207,7 +207,7 @@ fn main() {
             .action(ArgAction::SetTrue)
                 .short('e')
                 .long("extension-info")
-                .help("Provide more about extension - MIME type, when to read about it")
+                .help("Provide more about extension - MIME type, where to read about it")
         )
         .after_help("This app was written to analyze files, and give as much info about it as possible")
         .get_matches();
