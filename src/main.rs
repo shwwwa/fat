@@ -27,6 +27,7 @@ struct ExtensionVec {
 
 struct Arguments {
     file_path: PathBuf,
+    extensions_path: PathBuf,
     is_debug: bool,
     is_human: bool,
     only_general: bool,
@@ -67,12 +68,11 @@ fn get_extension_info(extension: &str, more_info: bool, extensions_path: &PathBu
     }
 }
 
-/// Currently returns not an extension, but if it is a zip file.
-fn get_general_info(args: &Arguments, path : &PathBuf){
+fn get_general_info(args: &Arguments){
     println!("## General information:");
-    println!("# Name: {}",path.file_name().unwrap().to_string_lossy());
+    println!("# Name: {}",args.file_path.file_name().unwrap().to_string_lossy());
     
-    let metadata = fs::metadata(path).unwrap();
+    let metadata = fs::metadata(args.file_path.clone()).unwrap();
 
     if !args.is_human {println!("# Size: {:?}", metadata.len())}
     else { println!("# Size: {}",ByteSize(metadata.len()).to_string_as(true));}
@@ -127,13 +127,13 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
                 outpath.display()
             );
         } else {
-            let file_size : String;
-            if args.is_human {
-                file_size = ByteSize(file.size()).to_string_as(true);
+            let file_size : String = if args.is_human {
+                ByteSize(file.size()).to_string_as(true)
             }
             else {
-                file_size = file.size().to_string();
-            }
+                file.size().to_string()
+            };
+
             println!(
                 "\"{}\" ({})",
                 outpath.display(),
@@ -143,22 +143,19 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
     }
 }
 
-fn get_info(args: &Arguments, path: &PathBuf, extensions_path: &PathBuf) {
-    if !path.exists() { println!("Path to file does not exist.");}
-    if !path.is_file() { println!("Path to file leads to directory, not file");}
+fn get_info(args: &Arguments) {
+    if !args.file_path.exists() { println!("Path to file does not exist.");}
+    if !args.file_path.is_file() { println!("Path to file leads to directory, not file");}
 
-    let file_extension: &std::ffi::OsStr = path.extension().unwrap_or(OsStr::new(""));
+    let file_extension: &std::ffi::OsStr = args.file_path.extension().unwrap_or(OsStr::new(""));
     // If file is zip todo: correct
     let is_zip_file: bool = file_extension.eq("zip");
 
-    let buf_reader : BufReader<fs::File>;
-    buf_reader = BufReader::new(fs::File::open(&path).unwrap());
-    if !args.ignore_general {get_general_info(&args, path)};
+    let buf_reader : BufReader<fs::File> = BufReader::new(fs::File::open(&args.file_path).unwrap());
+    if !args.ignore_general {get_general_info(args)};
 
-    get_extension_info(file_extension.to_str().unwrap_or(""), args.extension_info, extensions_path);
-    if is_zip_file {
-        if !args.only_general {get_zip_info(&args, buf_reader) };
-    }
+    get_extension_info(file_extension.to_str().unwrap_or(""), args.extension_info, &args.extensions_path);
+    if is_zip_file && !args.only_general {get_zip_info(args, buf_reader) };
 
 }
 
@@ -215,17 +212,21 @@ fn main() {
         .get_matches();
     
     let file_path : PathBuf = m.get_one::<PathBuf>("FILE").unwrap().clone();
-    
+    // Getting path to extensions.toml (forced to use env::current_dir())
+    let mut extensions_path = env::current_dir().unwrap().clone();
+    extensions_path.push("Extensions.toml");
+
     let args = Arguments
     { 
-        file_path : file_path.clone(),
+        file_path,
+        extensions_path,
         is_debug : m.get_flag("debug"), 
         is_human : m.get_flag("human"), 
         only_general : m.get_flag("only-general"), 
         ignore_general: m.get_flag("ignore-general"), 
         extension_info: m.get_flag("extension-info") 
     };
-    if args.is_debug { println!("Path to file: {:?}",&file_path); }
+    if args.is_debug { println!("Path to file: {:?}",&args.file_path); }
 
     // GUI interface (for now)
     let app = app::App::default();
@@ -235,12 +236,9 @@ fn main() {
     wind.end();
     wind.show();
 
-    // Getting path to extensions.toml (forced to use env::current_dir())
-    let mut extensions_path = env::current_dir().unwrap().clone();
-    extensions_path.push("Extensions.toml");
 
     // On pressing button we get info about file (selected from above)
-    but.set_callback(move |_| get_info(&args, &file_path, &extensions_path));
+    but.set_callback(move |_| get_info(&args));
     
     app.run().unwrap();
 }
