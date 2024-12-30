@@ -1,11 +1,12 @@
 extern crate bytesize;
 
+use fltk::app::quit;
 use fltk::{app, button::Button, frame::Frame, prelude::*, window::Window};
 use clap::{Arg, arg, ArgAction, Command};
 use bytesize::ByteSize;
 use serde_derive::Deserialize;
 use time::OffsetDateTime;
-use zip::CompressionMethod;
+use zip::{CompressionMethod, DateTime};
 use std::{env, ffi::OsStr, fs, time::SystemTime, path::PathBuf};
 use std::fs::File;
 use std::io::BufReader;
@@ -36,6 +37,24 @@ struct Arguments {
     extension_info: bool
 }
 
+/// Contain extension data as global to minimize calls --- TODO URGENT
+fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
+    let extensions_str = match fs::read_to_string(args.extensions_path.clone()) {
+        Ok(c) => c,
+        Err(_) => {
+            println!("Could not read extensions file: {}", args.extensions_path.to_string_lossy());
+            quit();
+            unreachable!();
+        }
+    };
+
+    let mut extension_vec: ExtensionVec = toml::from_str(&extensions_str).unwrap();
+    for extension_data in extension_vec.extensions.iter_mut() {
+        if &extension_data.extension != extension.to_str().unwrap() {continue};
+        return extension_data.name.clone();
+    }
+    return "unknown type".to_string();
+}
 
 fn get_extension_info(extension: &str, more_info: bool, extensions_path: &PathBuf) {
     println!("## Extension: {}", extension);
@@ -140,6 +159,7 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
                 outpath.display()
             );
         } else {
+            let last_modified : DateTime = file.last_modified().unwrap_or(DateTime::default());
             let percent = format!("{:.prec$}", (file.compressed_size() as f32 / file.size() as f32) * 100., prec = 2).to_string();
             let file_size : String = if args.is_human {
                 ByteSize(file.compressed_size()).to_string_as(true) +
@@ -159,9 +179,12 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
             };
 
             println!(
-                "\"{}\" ({})",
+                "\"{}\" ({}) ({}) (last modified: {}) ({})",
                 outpath.display(),
-                file_size
+                file_size,
+                get_extension_name(args, &file.mangled_name().extension().unwrap_or(OsStr::new(""))),
+                last_modified,
+                file.crc32()
             );
         }
     }
