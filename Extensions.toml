@@ -5,8 +5,7 @@ id = "zip"
 extension = "zip"
 name = "ZIP Compression File"
 category = "archive"
-description = """ZIP is one of the most popular file compression formats. It was created in 1989 as the native format of the PKZIP program, which was introduced by Phil Katz in the wake of a lawsuit (which he lost) against him by the makers of the then-popular ARC program (and file format) for copyright and trademark infringement in an earlier program PKARC which had been file-compatible with ARC.
-This resulted in Katz creating a new file format, which rapidly overtook ARC in popularity (to a large extent because of BBS sysops, then the primary users of such compression, resenting the lawsuit). Many programs have been released for a variety of operating systems to compress and decompress ZIP files, and native support for the format is built into several popular operating systems."""
+description = """ZIP is one of the most popular file compression formats. It was created in 1989 as the native format of the PKZIP program. Katz created a new file format, which rapidly overtook ARC in popularity."""
 further_reading = "http://fileformats.archiveteam.org/wiki/ZIP"
 preferred_mime = "application/zip-compressed"
 mime = ["application/zip", "application/octet-stream", "application/zip-compressed", "application/x-zip-compressed"]
@@ -19,7 +18,7 @@ category = "archive"
 description = """ZIPX refers to a ZIP file that uses advanced compression algorithms that are not universally supported. Among the possible algorithms are bzip2, LZMA, WavPack, and PPMd. The Zipx "format" originated with the WinZip software. """
 further_reading = "http://fileformats.archiveteam.org/wiki/Zipx"
 preferred_mime = "application/zip-compressed"
-mime = ["application/zip", "application/octet-stream", "application/zip-compressed", "application/x-zip-compressed"]
+mime = ["application/zip", "application/zip-compressed", "application/x-zip-compressed","application/octet-stream"]
 
 [[extensions]]
 id = "rar"
@@ -33,6 +32,16 @@ preferred_mime = "application/x-rar-compressed"
 mime = ["application/x-rar-compressed", "application/vnd.rar"]
 
 # needed right now for zip recognition
+[[extensions]]
+id = "apk"
+extension = "apk"
+name = "Android Package Kit"
+category = "package"
+description = """The Android Package with the file extension apk is the file format used by the Android operating system, and a number of other Android-based operating systems for distribution and installation of mobile apps, mobile games and middleware."""
+further_reading = "https://developer.android.com/"
+preferred_mime = "application/vnd.android.package-archive"
+mime = ["application/vnd.android.package-archive"]
+#
 [[extensions]]
 id = "autodesk123d"
 extension = "123dx"
@@ -118,7 +127,7 @@ id = "ooxmldocument"
 extension = "docx"
 name = "Office Open XML Document"
 category = "document"
-description = """Office Open XML (also informally known as OOXML)[5] is a zipped, XML-based file format developed by Microsoft for representing spreadsheets, charts, presentations and word processing documents."""
+description = """Office Open XML (also informally known as OOXML) is a zipped, XML-based file format developed by Microsoft for representing spreadsheets, charts, presentations and word processing documents."""
 further_reading = "https://en.wikipedia.org/wiki/Office_Open_XML"
 preferred_mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 mime = ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
@@ -128,10 +137,70 @@ id = "ooxmldrawing"
 extension = "vsdx"
 name = "Office Open XML Drawing"
 category = "diagram"
-description = """Office Open XML (also informally known as OOXML)[5] is a zipped, XML-based file format developed by Microsoft for representing spreadsheets, charts, presentations and word processing documents."""
+description = """Office Open XML (also informally known as OOXML) is a zipped, XML-based file format developed by Microsoft for representing spreadsheets, charts, presentations and word processing documents."""
 further_reading = "https://en.wikipedia.org/wiki/Office_Open_XML"
-preferred_mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-mime = ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
+preferred_mime = "application/vnd.ms-visio.drawing.main+xml"
+mime = ["application/vnd.ms-visio.drawing.main+xml"]
+
+[[extensions]]
+id = "ooxmlpresentation"
+extension = "pptx"
+name = "Office Open XML Presentation"
+category = "presentation"
+description = """Office Open XML (also informally known as OOXML) is a zipped, XML-based file format developed by Microsoft for representing spreadsheets, charts, presentations and word processing documents."""
+further_reading = "https://en.wikipedia.org/wiki/Office_Open_XML"
+preferred_mime = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+mime = ["application/vnd.openxmlformats-officedocument.presentationml.presentation"]
+
+[[extensions]]
+id = "ooxmlspreadsheet"
+extension = "xlsx"
+name = "Office Open XML Spreadsheet"
+category = "spreadsheet"
+description = """Office Open XML (also informally known as OOXML) is a zipped, XML-based file format developed by Microsoft for representing spreadsheets, charts, presentations and word processing documents."""
+further_reading = "https://en.wikipedia.org/wiki/Office_Open_XML"
+preferred_mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+mime = ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
+
+[[extensions]]
+id = "oxps"
+extension = "oxps"
+name = "OpenXPS"
+category = "document"
+description = """Open XML Paper Specification (also referred to as OpenXPS) is an open specification for a page description language and a fixed-document format."""
+further_reading = "https://ecma-international.org/publications-and-standards/standards/ecma-388/"
+preferred_mime = "application/oxps"
+mime = ["application/oxps"]
+
+[[extensions]]
+id = "scdoc"
+extension = "scdoc"
+name = "SpaceClaim Document"
+category = "model"
+description = """scdoc - document format for writing manual pages."""
+further_reading = "https://man.archlinux.org/man/scdoc.5.en"
+preferred_mime = "model/x-scdoc"
+mime = ["model/x-scdoc"]
+
+[[extensions]]
+id = "3mf"
+extension = "3mf"
+name = "3D Manufacturing Format"
+category = "model"
+description = """3MF is an XML-based data format designed specifically for additive manufacturing."""
+further_reading = "https://3mf.io/"
+preferred_mime = "application/vnd.ms-package.3dmanufacturing-3dmodel+xml"
+mime = ["application/vnd.ms-package.3dmanufacturing-3dmodel+xml"]
+
+[[extensions]]
+id = "usdz"
+extension = "usdz"
+name = "Universal Scene Description ZIP"
+category = "model"
+description = """USDZ is a zipped, but not compressed, version of USD. Typically USDZ is used to deliver AR (augmented reality) experiences on Apple devices (AR Quicklook)."""
+further_reading = "https://docs.fileformat.com/ru/3d/usdz/"
+preferred_mime = "model/vnd.usdz+zip"
+mime = ["model/vnd.usdz+zip"]
 
 # found in zip files
 [[extensions]]

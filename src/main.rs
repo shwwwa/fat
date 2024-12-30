@@ -133,7 +133,7 @@ fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
         let file = match archive.by_index(i) {
             Ok(file) => file,
             Err(e) => {
-                println!("Error (most likely encrypted file): {}", e);
+                println!("Error when scanning zip - {}", e);
                 continue;
             }
         };
@@ -144,35 +144,35 @@ fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
                 if file.name().starts_with("Fusion[Active]/") {
                     return Ok("autodesk123d".to_string())
                 } else if file.name().starts_with("circuitdiagram/") {
-                    return Ok("123dx".to_string());
+                    return Ok("cddx".to_string());
                 } else if file.name().starts_with("dwf/") {
-                    return Ok("123dx".to_string());
+                    return Ok("dwf".to_string());
                 } else if file.name().ends_with(".fb2") && !file.name().contains('/') {
-                    return Ok("123dx".to_string());
+                    return Ok("fbz".to_string());
                 } else if file.name().starts_with("FusionAssetName[Active]/") {
-                    return Ok("123dx".to_string());
+                    return Ok("fusion360".to_string());
                 } else if file.name().starts_with("Payload/") && file.name().contains(".app/") {
-                    return Ok("123dx".to_string());
+                    return Ok("ipa".to_string());
                 } else if file.name().starts_with("word/") {
-                    return Ok("123dx".to_string());
+                    return Ok("ooxmldocument".to_string());
                 } else if file.name().starts_with("visio/") {
-                    return Ok("123dx".to_string());
+                    return Ok("ooxmldrawing".to_string());
                 } else if file.name().starts_with("ppt/") {
-                    return Ok("123dx".to_string());
+                    return Ok("ooxmlpresentation".to_string());
                 } else if file.name().starts_with("xl/") {
-                    return Ok("123dx".to_string());
+                    return Ok("ooxmlspreadsheet".to_string());
                 } else if file.name().starts_with("Documents/") && file.name().ends_with(".fpage") {
-                    return Ok("123dx".to_string());
+                    return Ok("oxps".to_string());
                 } else if file.name().starts_with("SpaceClaim/") {
-                    return Ok("123dx".to_string());
+                    return Ok("scdoc".to_string());
                 } else if file.name().starts_with("3D/") && file.name().ends_with(".model") {
-                    return Ok("123dx".to_string());
+                    return Ok("3mf".to_string());
                 } else if (file.name().ends_with(".usd")
                     || file.name().ends_with(".usda")
                     || file.name().ends_with(".usdc"))
                     && !file.name().contains('/')
                 {
-                    return Ok("universal".to_string());
+                    return Ok("usdz".to_string());
                 }
             }
         };
@@ -463,12 +463,14 @@ fn main() {
             Arg::new("ignore-general")
             .action(ArgAction::SetTrue)
                 .long("ignore-general")
+                .short('i')
                 .help("Provides only general info e.g name, size, when accessed...")
         )
         .arg(
             Arg::new("only-general")
             .action(ArgAction::SetTrue)
                 .long("only-general")
+                .short('g')
                 .help("Provide only special info e.g basic extension info, special metadata of file... (when with ignore-general provides only info of extension)")
         )
         .after_help("This app was written to analyze files, and give as much info about it as possible")

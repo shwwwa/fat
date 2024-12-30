@@ -5,6 +5,7 @@ Maybe later there will be support for conversion and viewing.
 Right now it only supports zip/rar archives (it still can provide general info about other file formats though)
 ## Roadmap
 Building CLI, then GUI.
+Print only needed info.
 Support of modules, extensive library of all extensions that exist in this world (even if nobody uses them, kind of save-history project)
 ## Other sources
 https://github.com/mmalecot/file-format - more generic scope on project (more useful one if you're trying to make a SPECIFIC reader for project, not general one like mine)
