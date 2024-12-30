@@ -18,4 +18,6 @@ toml = "0.8.19"
 serde = "1.0.217"
 serde_derive = "1.0.217"
 unrar = "0.5.7"
+strum_macros = "0.26.4"
+strum = "0.26.3"
 

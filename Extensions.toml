@@ -1,5 +1,5 @@
 # Maybe do a thing with most common cases to sort? (by id, lower id, more common file)
-
+# Maybe later add a line with recommended programs to open with?
 [[extensions]]
 id = "zip"
 extension = "zip"
@@ -27,10 +27,32 @@ extension = "rar"
 name = "RAR Compression File (Roshal Archive)"
 category = "archive"
 description = """RAR (Roshal Archive) is a compressed archive format used by the compression software RAR and WinRAR. It was originally for DOS, but has been widely used on Windows (as WinRAR) and other platforms.
-The developers make the decompression code available for use in other programs and allow its distribution, but with a license provision that "You cannot use the unrar source to re-create the RAR compression algorithm, which is proprietary." """
+The developers make the decompression code available for use in other programs and allow its distribution, but with a license provision that "You cannot use the unrar source to re-create the RAR compression algorithm, which is proprietary. """
 further_reading = "http://fileformats.archiveteam.org/wiki/RAR"
 preferred_mime = "application/x-rar-compressed"
 mime = ["application/x-rar-compressed", "application/vnd.rar"]
+
+# needed right now for zip recognition
+[[extensions]]
+id = "autodesk123d"
+extension = "123dx"
+name = "Autodesk 123D"
+category = "model"
+description = """An extension for 3D modeling and design tool suite, were renowned for user-friendly interfaces and diverse functionalities."""
+further_reading = "https://www.autodesk.com/solutions/123d-apps"
+preferred_mime = "model/x-123dx"
+mime = ["model/x-123dx"]
+
+# found in zip files
+[[extensions]]
+id = "exe"
+extension = "exe"
+name = "Executable File"
+category = "executable"
+description = """EXE most commonly refers to a family of executable file formats. It includes the original MS-DOS EXE format, and a number of newer formats built on top of that format. Most of them use the same .exe file extension. """
+further_reading = "http://fileformats.archiveteam.org/wiki/EXE"
+preferred_mime = "application/x-msdownload"
+mime = ["application/x-msdownload"]
 
 # Haptic formats 
 [[extensions]]

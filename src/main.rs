@@ -4,15 +4,20 @@ use fltk::app::quit;
 use fltk::{app, button::Button, frame::Frame, prelude::*, window::Window};
 use clap::{Arg, arg, ArgAction, Command};
 use bytesize::ByteSize;
+use strum_macros::{EnumString, IntoStaticStr};
+use serde::{Deserializer, Deserialize};
 use serde_derive::Deserialize;
 use time::OffsetDateTime;
 use unrar::{ListSplit, VolumeInfo};
 use zip::{CompressionMethod, DateTime};
+use std::str::FromStr;
 use std::{env, ffi::OsStr, fs, fs::File, time::SystemTime, path::PathBuf};
-use std::io::{BufReader, Error, Read, Seek};
+use std::io::{BufReader, Error};
 
 /// The difference with file-format lib is that we need as much accurate representation of types as possible,
 /// whereas in file_format categories used for quick choice of formats needed for application (why do you need other file's backups for regular app?).
+#[derive(Debug, PartialEq, EnumString, IntoStaticStr)]
+#[strum(ascii_case_insensitive)]
 enum Category {
     /// Files and directories stored in a single, possibly compressed, archive .
     Archive,
@@ -84,8 +89,11 @@ enum Category {
 
 #[derive(Deserialize, Debug)]
 struct Extension {
+    #[allow(dead_code)]
+    id: String,
     extension: String,
     name: String,
+    category: Category,
     description: String,
     further_reading: String,
     preferred_mime: String,
@@ -97,6 +105,15 @@ struct ExtensionVec {
     extensions: Vec<Extension>,
 }
 
+impl<'de> Deserialize<'de> for Category {
+    fn deserialize<D>(de: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let category = String::deserialize(de)?;
+        Ok(Category::from_str(&category).unwrap_or(Category::Other))
+    }
+}
 struct Arguments {
     file_path: PathBuf,
     extensions_path: PathBuf,
@@ -107,9 +124,60 @@ struct Arguments {
     extension_info: bool
 }
 
-/// Is
-fn is_zip<R: Read + Seek>(reader: R) -> Result<Category, Error> {
-    return Ok(Category::Archive);
+/// Is zip file is just a wrapper for other file format.
+/// If true, returns id of extension.
+fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
+    let mut archive = zip::ZipArchive::new(buf_reader).unwrap();
+    for i in 0..archive.len() {
+        let file = match archive.by_index(i) {
+            Ok(file) => file,
+            Err(e) => {
+                println!("Error (most likely encrypted file): {}", e);
+                continue;
+            }
+        };
+        match file.name() {
+            "AndroidManifest.xml" => return Ok("apk".to_string()),
+            _ => 
+            {
+                if file.name().starts_with("Fusion[Active]/") {
+                    return Ok("autodesk123d".to_string())
+                } else if file.name().starts_with("circuitdiagram/") {
+                    return Ok("123dx".to_string());
+                } else if file.name().starts_with("dwf/") {
+                    return Ok("123dx".to_string());
+                } else if file.name().ends_with(".fb2") && !file.name().contains('/') {
+                    return Ok("123dx".to_string());
+                } else if file.name().starts_with("FusionAssetName[Active]/") {
+                    return Ok("123dx".to_string());
+                } else if file.name().starts_with("Payload/") && file.name().contains(".app/") {
+                    return Ok("123dx".to_string());
+                } else if file.name().starts_with("word/") {
+                    return Ok("123dx".to_string());
+                } else if file.name().starts_with("visio/") {
+                    return Ok("123dx".to_string());
+                } else if file.name().starts_with("ppt/") {
+                    return Ok("123dx".to_string());
+                } else if file.name().starts_with("xl/") {
+                    return Ok("123dx".to_string());
+                } else if file.name().starts_with("Documents/") && file.name().ends_with(".fpage") {
+                    return Ok("123dx".to_string());
+                } else if file.name().starts_with("SpaceClaim/") {
+                    return Ok("123dx".to_string());
+                } else if file.name().starts_with("3D/") && file.name().ends_with(".model") {
+                    return Ok("123dx".to_string());
+                } else if (file.name().ends_with(".usd")
+                    || file.name().ends_with(".usda")
+                    || file.name().ends_with(".usdc"))
+                    && !file.name().contains('/')
+                {
+                    return Ok("universal".to_string());
+                }
+            }
+        };
+    }
+    // Nothing was found, return regular zip file
+    Ok("zip".to_string())
 }
 
 fn get_general_info(args: &Arguments){
@@ -151,24 +219,27 @@ fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
     "unknown type".to_string()
 }
 
-fn get_extension_info(extension: &str, more_info: bool, extensions_path: &PathBuf) {
+fn get_extension_info(args: & Arguments, extension: String) {
+
     println!("## Extension: {}", extension);
-    let extensions_str = match fs::read_to_string(extensions_path) {
+    let extensions_str = match fs::read_to_string(args.extensions_path.clone()) {
         Ok(c) => c,
         Err(_) => {
-            println!("Could not read extensions file: {}", extensions_path.to_string_lossy());
+            println!("Could not read extensions file: {}", args.extensions_path.to_string_lossy());
             return;
         }
     };
 
     let mut extension_vec: ExtensionVec = toml::from_str(&extensions_str).unwrap();
     for extension_data in extension_vec.extensions.iter_mut() {
-        if extension_data.extension.ne(extension) {continue};
-        //TODO: make a switch either two or more same extensions with different data types found in that file
+        if extension_data.extension.ne(&extension) {continue};
+        let category : &str = (&extension_data.category).into();
+        println!("# Category: {}", category);
         println!("# Name: {}", extension_data.name);
         println!("# Media type (mime): {}", extension_data.preferred_mime);
-    
-        if more_info {
+        
+        // Maybe print ids???
+        if args.extension_info {
             if extension_data.mime.len() > 1{
                 print!("# Other possible media types (mimes): ");
                 for mime in extension_data.mime.iter_mut() {
@@ -315,14 +386,34 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
 }
 
 fn get_info(args: &Arguments) {
-    if !args.file_path.exists() { println!("Path to file does not exist.");}
-    if !args.file_path.is_file() { println!("Path to file leads to directory, not file");}
+    if !args.file_path.exists() { 
+        println!("Path to file does not exist.");
+        return;
+    }
+    if !args.file_path.is_file() { 
+        println!("Path to file leads to directory, not file.");
+        return;
+    }
 
     let file_extension: &std::ffi::OsStr = args.file_path.extension().unwrap_or(OsStr::new(""));
     let buf_reader : BufReader<fs::File> = BufReader::new(fs::File::open(&args.file_path).unwrap());
     
     if !args.ignore_general {get_general_info(args)};
-    get_extension_info(file_extension.to_str().unwrap_or(""), args.extension_info, &args.extensions_path);
+    let mut extension = file_extension.to_str().unwrap_or("").to_string();
+    // TODOL handling if id does not match extension
+    if extension == "zip" {
+        // If it's a zip, we might need to check for more complex zip types
+        extension = match get_complex_zip_id(buf_reader) {
+            Ok(extension) => extension.to_string(),
+            Err(e) => {
+                println!("## Unreadable zip file: {}", e);
+                "zip".to_string()
+            }
+        };
+    }
+
+    let buf_reader : BufReader<fs::File> = BufReader::new(fs::File::open(&args.file_path).unwrap());
+    get_extension_info(args, extension);
     // Specific use-cases
     if !args.only_general { 
         if file_extension.eq("zip") { get_zip_info(args, buf_reader) }
