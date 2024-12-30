@@ -50,10 +50,10 @@ fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
 
     let mut extension_vec: ExtensionVec = toml::from_str(&extensions_str).unwrap();
     for extension_data in extension_vec.extensions.iter_mut() {
-        if &extension_data.extension != extension.to_str().unwrap() {continue};
+        if extension_data.extension != extension.to_str().unwrap() {continue};
         return extension_data.name.clone();
     }
-    return "unknown type".to_string();
+    "unknown type".to_string()
 }
 
 fn get_extension_info(extension: &str, more_info: bool, extensions_path: &PathBuf) {
@@ -159,7 +159,7 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
                 outpath.display()
             );
         } else {
-            let last_modified : DateTime = file.last_modified().unwrap_or(DateTime::default());
+            let last_modified : DateTime = file.last_modified().unwrap_or_default();
             let percent = format!("{:.prec$}", (file.compressed_size() as f32 / file.size() as f32) * 100., prec = 2).to_string();
             let file_size : String = if args.is_human {
                 ByteSize(file.compressed_size()).to_string_as(true) +
@@ -182,7 +182,7 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
                 "\"{}\" ({}) ({}) (last modified: {}) ({})",
                 outpath.display(),
                 file_size,
-                get_extension_name(args, &file.mangled_name().extension().unwrap_or(OsStr::new(""))),
+                get_extension_name(args, file.mangled_name().extension().unwrap_or(OsStr::new(""))),
                 last_modified,
                 file.crc32()
             );
