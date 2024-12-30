@@ -1,12 +1,13 @@
 extern crate bytesize;
+
+use fltk::{app, button::Button, frame::Frame, prelude::*, window::Window};
+use clap::{Arg, arg, ArgAction, Command};
+use bytesize::ByteSize;
+use serde_derive::Deserialize;
+use time::OffsetDateTime;
+use std::{env, ffi::OsStr, fs, time::SystemTime, path::PathBuf};
 use std::fs::File;
 use std::io::BufReader;
-use serde_derive::Deserialize;
-use std::{env, ffi::OsStr, fs, time::SystemTime, path::PathBuf};
-use clap::{Arg, ArgAction, Command};
-use fltk::{app, button::Button, frame::Frame, prelude::*, window::Window};
-use bytesize::ByteSize;
-use time::OffsetDateTime;
 
 
 #[derive(Deserialize, Debug)]
@@ -25,6 +26,7 @@ struct ExtensionVec {
 }
 
 struct Arguments {
+    file_path: PathBuf,
     is_debug: bool,
     is_human: bool,
     only_general: bool,
@@ -168,6 +170,7 @@ fn main() {
         .about("FAT-RS - File Analysis Tool, analyzes metadata and tries to guess its extension.")
         .disable_help_subcommand(true)
         .disable_help_flag(true)
+        .arg(arg!(<FILE> ... "File to analyze").value_parser(clap::value_parser!(PathBuf)))
         .arg(
             Arg::new("help")
                 .short('?')
@@ -211,15 +214,20 @@ fn main() {
         .after_help("This app was written to analyze files, and give as much info about it as possible")
         .get_matches();
     
+    let file_path : PathBuf = m.get_one::<PathBuf>("FILE").unwrap().clone();
+    
     let args = Arguments
     { 
+        file_path : file_path.clone(),
         is_debug : m.get_flag("debug"), 
         is_human : m.get_flag("human"), 
         only_general : m.get_flag("only-general"), 
         ignore_general: m.get_flag("ignore-general"), 
         extension_info: m.get_flag("extension-info") 
     };
+    if args.is_debug { println!("Path to file: {:?}",&file_path); }
 
+    // GUI interface (for now)
     let app = app::App::default();
     let mut wind = Window::new(100, 100, 400, 300, "FAT-RS v0.1.1");
     Frame::new(0, 0, 400, 200, "Program to analyze files");
@@ -227,16 +235,12 @@ fn main() {
     wind.end();
     wind.show();
 
-    // Getting path to required files.
-    let mut zip_path = env::current_dir().unwrap();
-    let mut extensions_path = zip_path.clone();
-    zip_path.push(r"test_files\test.zip");
+    // Getting path to extensions.toml (forced to use env::current_dir())
+    let mut extensions_path = env::current_dir().unwrap().clone();
     extensions_path.push("Extensions.toml");
 
-    if args.is_debug { println!("Path to file: {:?}",zip_path); }
-
     // On pressing button we get info about file (selected from above)
-    but.set_callback(move |_| get_info(&args, &zip_path, &extensions_path));
+    but.set_callback(move |_| get_info(&args, &file_path, &extensions_path));
     
     app.run().unwrap();
 }
