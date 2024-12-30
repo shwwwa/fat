@@ -6,6 +6,7 @@ use clap::{Arg, arg, ArgAction, Command};
 use bytesize::ByteSize;
 use serde_derive::Deserialize;
 use time::OffsetDateTime;
+use unrar::{ListSplit, VolumeInfo};
 use zip::{CompressionMethod, DateTime};
 use std::{env, ffi::OsStr, fs, time::SystemTime, path::PathBuf};
 use std::fs::File;
@@ -109,8 +110,36 @@ fn get_extension_info(extension: &str, more_info: bool, extensions_path: &PathBu
     }
 }
 
-fn get_rar_info(args: &Arguments, buf_reader: BufReader<File>) {
+fn get_rar_info(args: &Arguments) {
     println!("## RAR information");
+    let mut option = None;
+    match unrar::Archive::new(&args.file_path).break_open::<ListSplit>(Some(
+        &mut option
+    )) {
+        // Looks like I need to write my own implementations of rar lib
+        Ok(archive) => {
+            if archive.has_comment() { println!("# Comment: currently not supported", )}
+            if archive.volume_info() != VolumeInfo::None {
+                println!("# This is multi-part archive, it is not supported for now.");
+                return;
+            }
+            if let Some(error) = option {
+                // If the error's data field holds an OpenArchive, an error occurred while opening,
+                // the archive is partly broken (e.g. broken header), but is still readable from.
+                // In this example, we are still going to use the archive and list its contents.
+                println!("Error: {}, continuing.", error);
+            }
+            for entry in archive {
+                match entry {
+                    Ok(e) => println!("{}", e),
+                    Err(err) => println!("Error: {}", err),
+                }
+            }    
+        }
+        Err(e) => {
+            println!("Error: {}", e);
+        }
+    }
 }
 
 fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
@@ -138,8 +167,8 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
     for i in 0..archive.len() {
         let file = match archive.by_index(i) {
             Ok(file) => file,
-            Err(_) => {
-                println!("found encrypted file, not supported now");
+            Err(e) => {
+                println!("Error (most likely encrypted file): {}", e);
                 continue;
             }
         };
@@ -224,7 +253,7 @@ fn get_info(args: &Arguments) {
     // Specific use-cases
     if !args.only_general { 
         if file_extension.eq("zip") { get_zip_info(args, buf_reader) }
-        else if file_extension.eq("rar") { get_rar_info(args, buf_reader) };
+        else if file_extension.eq("rar") { get_rar_info(args) };
     }
 }
 
