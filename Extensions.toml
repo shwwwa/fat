@@ -174,7 +174,7 @@ mime = ["image/x-sketch"]
 
 [[extensions]]
 id = "vsix"
-extension = "sketch"
+extension = "vsix"
 name = "Microsoft Visual Studio Extension"
 category = "package"
 description = """TEMPLATE"""
@@ -304,9 +304,9 @@ preferred_mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sh
 mime = ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
 
 [[extensions]]
-id = "oxps"
-extension = "oxps"
-name = "OpenXPS"
+id = "xps"
+extension = "xps"
+name = "XPS / OpenXPS"
 category = "document"
 description = """Open XML Paper Specification (also referred to as OpenXPS) is an open specification for a page description language and a fixed-document format."""
 further_reading = "https://ecma-international.org/publications-and-standards/standards/ecma-388/"

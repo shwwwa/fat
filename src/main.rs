@@ -115,7 +115,7 @@ struct ExtensionVec {
     extensions: Vec<Extension>,
 }
 
-struct Arguments {
+pub struct Arguments {
     file_path: PathBuf,
     extensions_path: PathBuf,
     is_debug: bool,
@@ -127,9 +127,12 @@ struct Arguments {
 
 /// Is zip file is just a wrapper for other file format.
 /// If true, returns id of extension. If false, returns "zip" id.
-/// If scanning gives error, returns error.
+/// Does not return error, but can return in future.
 fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
     let mut archive = zip::ZipArchive::new(buf_reader).unwrap();
+
+    // Jar and ear have both MANIFEST.mf file, if it has also application.xml then it's ear, if it does not it's jar
+    let mut jar_ear_situation : bool = false;
     for i in 0..archive.len() {
         let file = match archive.by_index(i) {
             Ok(file) => file,
@@ -147,8 +150,8 @@ fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
             "BundleConfig.pb" => return Ok("aab".to_string()),
             "DOMDocument.xml" => return Ok("fla".to_string()),
             "META-INF/AIR/application.xml" => return Ok("air".to_string()),
-            "META-INF/MANIFEST.MF" => return Ok("jar".to_string()),
             "META-INF/application.xml" => return Ok("ear".to_string()),
+            "META-INF/MANIFEST.MF" => { jar_ear_situation = true; },
             "META-INF/mozilla.rsa" => return Ok("xpi".to_string()),
             "WEB-INF/web.xml" => return Ok("war".to_string()),
             "doc.kml" => return Ok("kmz".to_string()),
@@ -156,12 +159,13 @@ fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
             "extension.vsixmanifest" => return Ok("vsix".to_string()),
             _ => 
             {
+                println!("{}", file.name());
                 if file.name().starts_with("Fusion[Active]/") {
                     return Ok("autodesk123d".to_string())
                 } else if file.name().starts_with("circuitdiagram/") {
                     return Ok("cddx".to_string())
                 } else if file.name().starts_with("dwf/") {
-                    return Ok("dwf".to_string())
+                    return Ok("dwfx".to_string())
                 } else if file.name().ends_with(".fb2") && !file.name().contains('/') {
                     return Ok("fbz".to_string())
                 } else if file.name().starts_with("FusionAssetName[Active]/") {
@@ -177,7 +181,7 @@ fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
                 } else if file.name().starts_with("xl/") {
                     return Ok("ooxmlspreadsheet".to_string())
                 } else if file.name().starts_with("Documents/") && file.name().ends_with(".fpage") {
-                    return Ok("oxps".to_string())
+                    return Ok("xps".to_string())
                 } else if file.name().starts_with("SpaceClaim/") {
                     return Ok("scdoc".to_string())
                 } else if file.name().starts_with("3D/") && file.name().ends_with(".model") {
@@ -188,10 +192,10 @@ fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
                     && !file.name().contains('/') {
                     return Ok("usdz".to_string())
                 }
-                else { return Ok("zip".to_string()) }
             }
         };
     }
+    if jar_ear_situation { return Ok("jar".to_string());}
     // Nothing was found, return regular zip file
     Ok("zip".to_string())
 }
@@ -199,7 +203,7 @@ fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
 /// Is zip file is just a wrapper for other file format.
 /// If true, returns extension string. If false, returns "zip" extension.
 /// If scanning gives error, returns error.
-fn get_complex_zip_extension(args: &Arguments, buf_reader: BufReader<File>) -> Result<String, Error> {
+pub fn get_complex_zip_extension(args: &Arguments, buf_reader: BufReader<File>) -> Result<String, Error> {
     match get_complex_zip_id(buf_reader) {
         Ok(id) => get_extension_from_id(args, id),
         Err(e) => Err(e)
@@ -554,4 +558,66 @@ fn main() {
     but.set_callback(move |_| get_info(&args));
     
     app.run().unwrap();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::*;
+
+    #[fixture]
+    #[once]
+    fn once_fixture() -> Arguments {
+        let file_path = PathBuf::from_str(r"samples\recognition\zip\").unwrap();
+        // Getting path to extensions.toml (forced to use env::current_dir())
+        let mut extensions_path = env::current_dir().unwrap().clone();
+        extensions_path.push("Extensions.toml");
+        Arguments {
+            file_path,
+            extensions_path,
+            is_debug : true,
+            is_human : false, 
+            only_general : false,
+            ignore_general: false,
+            extension_info: false
+        }
+    }
+
+    #[rstest]
+    #[case::threemf("3mf")]
+    #[case::one23dx("123dx")]
+    #[case::aab("aab")]
+    #[case::air("air")]
+    #[case::apk("apk")]
+    #[case::appx("appx")]
+    #[case::appxbundle("appxbundle")]
+    #[case::cddx("cddx")]
+    #[case::docx("docx")]
+    #[case::dwfx("dwfx")]
+    #[case::ear("ear")]
+    #[case::f3d("f3d")]
+    #[case::fbx("fbz")]
+    #[case::fla("fla")]
+    #[case::ipa("ipa")]
+    #[case::jar("jar")]
+    #[case::kmz("kmz")]
+    #[case::pptx("pptx")]
+    #[case::scdoc("scdoc")]
+    #[case::sketch("sketch")]
+    #[case::usdz("usdz")]
+    #[case::vsdx("vsdx")]
+    #[case::vsix("vsix")]
+    #[case::war("war")]
+    #[case::xap("xap")]
+    #[case::xlsx("xlsx")]
+    #[case::xpi("xpi")]
+    #[case::xps("xps")]
+    fn recognition_tests(once_fixture: &Arguments, #[case] extension: String){
+        let mut file_path = once_fixture.file_path.clone();
+        file_path.push(format!("{}.zip", extension));
+
+        let buf_reader : BufReader<fs::File> = BufReader::new(fs::File::open(file_path).unwrap());
+
+        assert_eq!(get_complex_zip_extension(&once_fixture, buf_reader).unwrap(), extension);
+    }
 }
