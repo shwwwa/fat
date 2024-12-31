@@ -424,10 +424,10 @@ fn get_info(args: &Arguments) {
 
 fn main() {
     // Console arguments
-    let m = Command::new("fat-rs")
+    let m = Command::new("fat")
         .author("caffidev, caffidev@gmail.com")
         .version("0.1.1")
-        .about("fat-rs - File Analysis Tool, analyzes metadata and tries to guess its extension.")
+        .about("fat - File Analysis Tool, analyzes metadata and tries to guess its extension.")
         .disable_help_subcommand(true)
         .disable_help_flag(true)
         .arg(arg!(<FILE> ... "File to analyze").value_parser(clap::value_parser!(PathBuf)))

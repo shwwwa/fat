@@ -1,9 +1,19 @@
 [package]
-name = "fat-rs"
+name = "fat"
 version = "0.2.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.dev]
+incremental = true
+opt-level = 1
+debug = true
+
+[profile.release]
+incremental = true
+opt-level = 3
+debug = false
 
 [dependencies]
 bytesize = "1.3.0"
