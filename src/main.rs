@@ -159,7 +159,6 @@ fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
             "extension.vsixmanifest" => return Ok("vsix".to_string()),
             _ => 
             {
-                println!("{}", file.name());
                 if file.name().starts_with("Fusion[Active]/") {
                     return Ok("autodesk123d".to_string())
                 } else if file.name().starts_with("circuitdiagram/") {
