@@ -141,41 +141,54 @@ fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
         };
         match file.name() {
             "AndroidManifest.xml" => return Ok("apk".to_string()),
+            "AppManifest.xaml" => return Ok("xap".to_string()),
+            "AppxManifest.xml" => return Ok("appx".to_string()),
+            "AppxMetadata/AppxBundleManifest.xml" => return Ok("appxbundle".to_string()),
+            "BundleConfig.pb" => return Ok("aab".to_string()),
+            "DOMDocument.xml" => return Ok("fla".to_string()),
+            "META-INF/AIR/application.xml" => return Ok("air".to_string()),
+            "META-INF/MANIFEST.MF" => return Ok("jar".to_string()),
+            "META-INF/application.xml" => return Ok("ear".to_string()),
+            "META-INF/mozilla.rsa" => return Ok("xpi".to_string()),
+            "WEB-INF/web.xml" => return Ok("war".to_string()),
+            "doc.kml" => return Ok("kmz".to_string()),
+            "document.json" => return Ok("sketch43".to_string()),
+            "extension.vsixmanifest" => return Ok("vsix".to_string()),
             _ => 
             {
                 if file.name().starts_with("Fusion[Active]/") {
                     return Ok("autodesk123d".to_string())
                 } else if file.name().starts_with("circuitdiagram/") {
-                    return Ok("cddx".to_string());
+                    return Ok("cddx".to_string())
                 } else if file.name().starts_with("dwf/") {
-                    return Ok("dwf".to_string());
+                    return Ok("dwf".to_string())
                 } else if file.name().ends_with(".fb2") && !file.name().contains('/') {
-                    return Ok("fbz".to_string());
+                    return Ok("fbz".to_string())
                 } else if file.name().starts_with("FusionAssetName[Active]/") {
-                    return Ok("fusion360".to_string());
+                    return Ok("fusion360".to_string())
                 } else if file.name().starts_with("Payload/") && file.name().contains(".app/") {
-                    return Ok("ipa".to_string());
+                    return Ok("ipa".to_string())
                 } else if file.name().starts_with("word/") {
-                    return Ok("ooxmldocument".to_string());
+                    return Ok("ooxmldocument".to_string())
                 } else if file.name().starts_with("visio/") {
-                    return Ok("ooxmldrawing".to_string());
+                    return Ok("ooxmldrawing".to_string())
                 } else if file.name().starts_with("ppt/") {
-                    return Ok("ooxmlpresentation".to_string());
+                    return Ok("ooxmlpresentation".to_string())
                 } else if file.name().starts_with("xl/") {
-                    return Ok("ooxmlspreadsheet".to_string());
+                    return Ok("ooxmlspreadsheet".to_string())
                 } else if file.name().starts_with("Documents/") && file.name().ends_with(".fpage") {
-                    return Ok("oxps".to_string());
+                    return Ok("oxps".to_string())
                 } else if file.name().starts_with("SpaceClaim/") {
-                    return Ok("scdoc".to_string());
+                    return Ok("scdoc".to_string())
                 } else if file.name().starts_with("3D/") && file.name().ends_with(".model") {
-                    return Ok("3mf".to_string());
+                    return Ok("3mf".to_string())
                 } else if (file.name().ends_with(".usd")
                     || file.name().ends_with(".usda")
                     || file.name().ends_with(".usdc"))
-                    && !file.name().contains('/')
-                {
-                    return Ok("usdz".to_string());
+                    && !file.name().contains('/') {
+                    return Ok("usdz".to_string())
                 }
+                else { return Ok("zip".to_string()) }
             }
         };
     }
@@ -192,6 +205,7 @@ fn get_complex_zip_extension(args: &Arguments, buf_reader: BufReader<File>) -> R
         Err(e) => Err(e)
     }
 }
+
 /// Gets generic file info like time properties.
 fn get_general_info(args: &Arguments){
     println!("## General information:");

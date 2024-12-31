@@ -41,6 +41,147 @@ description = """The Android Package with the file extension apk is the file for
 further_reading = "https://developer.android.com/"
 preferred_mime = "application/vnd.android.package-archive"
 mime = ["application/vnd.android.package-archive"]
+
+[[extensions]]
+id = "xap"
+extension = "xap"
+name = "XA Package"
+category = "package"
+description = """XAP is the file format used to distribute and install application software and middleware onto Microsoft's Windows Phone 7/8/8.1/10 operating system, and is the file format for Silverlight applications."""
+further_reading = "https://en.wikipedia.org/wiki/XAP_(file_format)"
+preferred_mime = "application/x-silverlight-app"
+mime = ["application/x-silverlight-app"]
+
+[[extensions]]
+id = "appx"
+extension = "appx"
+name = "Windows App Package"
+category = "package"
+description = """APPX is a file format used to distribute and install apps on Windows 8.x, 10, 11, Windows Phone 8.1, Windows 10 Mobile, Xbox One, Xbox Series X|S, Hololens, and Windows 10 IoT Core."""
+further_reading = "https://en.wikipedia.org/wiki/Universal_Windows_Platform_apps#APPX"
+preferred_mime = "application/vnd.ms-appx"
+mime = ["application/vnd.ms-appx"]
+
+[[extensions]]
+id = "appxbundle"
+extension = "appxbundle"
+name = "Windows App Bundle"
+category = "package"
+description = """APPX is a file format used to distribute and install apps on Windows 8.x, 10, 11, Windows Phone 8.1, Windows 10 Mobile, Xbox One, Xbox Series X|S, Hololens, and Windows 10 IoT Core."""
+further_reading = "https://en.wikipedia.org/wiki/Universal_Windows_Platform_apps#APPX"
+preferred_mime = "application/vnd.ms-appx.bundle"
+mime = ["application/vnd.ms-appx.bundle"]
+
+[[extensions]]
+id = "aab"
+extension = "aab"
+name = "Android App Bundle"
+category = "package"
+description = """Android App Bundle is the Android application publishing file format. The App Bundle must include the application's compiled code and resources, which allows for the signing and generation of APK files to be deferred to the app store, reducing the initial download size of the app. The file extension used for this format is ".aab"."""
+further_reading = "https://ru.wikipedia.org/wiki/Android_App_Bundle"
+preferred_mime = "application/vnd.android.aab"
+mime = ["application/vnd.android.aab"]
+
+[[extensions]]
+id = "fla"
+extension = "fla"
+name = "Macromedia Flash Project"
+category = "animation"
+description = """The file extension .fla stands for Macromedia Flash Project File Format created by Adobe Animate, a piece of interactive multimedia software."""
+further_reading = "https://helpx.adobe.com/en/animate/using/best-practices-structuring-fla-files.html"
+preferred_mime = "application/vnd.adobe.fla"
+mime = ["application/vnd.adobe.fla"]
+
+[[extensions]]
+id = "air"
+extension = "air"
+name = "Adobe Integrated Runtime"
+category = "package"
+description = """TEMPLATE"""
+further_reading = "TEMPLATE"
+preferred_mime = "application/vnd.adobe.air-application-installer-package+zip"
+mime = ["application/vnd.adobe.air-application-installer-package+zip"]
+
+[[extensions]]
+id = "jar"
+extension = "jar"
+name = "Java Archive"
+category = "package"
+description = """TEMPLATE"""
+further_reading = "TEMPLATE"
+preferred_mime = "application/java-archive"
+mime = ["application/java-archive"]
+
+[[extensions]]
+id = "ear"
+extension = "ear"
+name = "Enterprise Application Archive"
+category = "package"
+description = """TEMPLATE"""
+further_reading = "TEMPLATE"
+preferred_mime = "application/java-archive"
+mime = ["application/java-archive"]
+
+[[extensions]]
+id = "xpi"
+extension = "xpi"
+name = "XPInstall"
+category = "package"
+description = """TEMPLATE"""
+further_reading = "TEMPLATE"
+preferred_mime = "application/x-xpinstall"
+mime = ["application/x-xpinstall"]
+
+[[extensions]]
+id = "war"
+extension = "war"
+name = "Web Application Archive"
+category = "package"
+description = """TEMPLATE"""
+further_reading = "TEMPLATE"
+preferred_mime = "application/java-archive"
+mime = ["application/java-archive"]
+
+[[extensions]]
+id = "kml"
+extension = "kml"
+name = "Keyhole Markup Language"
+category = "geospatial"
+description = """TEMPLATE"""
+further_reading = "TEMPLATE"
+preferred_mime = "application/vnd.google-earth.kml+xml"
+mime = ["application/vnd.google-earth.kml+xml"]
+
+[[extensions]]
+id = "kmz"
+extension = "kmz"
+name = "Keyhole Markup Language ZIP"
+category = "geospatial"
+description = """TEMPLATE"""
+further_reading = "TEMPLATE"
+preferred_mime = "application/vnd.google-earth.kmz"
+mime = ["application/vnd.google-earth.kml+xmz"]
+
+[[extensions]]
+id = "sketch43"
+extension = "sketch"
+name = "Sketch 43"
+category = "image"
+description = """TEMPLATE"""
+further_reading = "TEMPLATE"
+preferred_mime = "image/x-sketch"
+mime = ["image/x-sketch"]
+
+[[extensions]]
+id = "vsix"
+extension = "sketch"
+name = "Microsoft Visual Studio Extension"
+category = "package"
+description = """TEMPLATE"""
+further_reading = "TEMPLATE"
+preferred_mime = "application/vsix"
+mime = ["application/vsix"]
+
 #
 [[extensions]]
 id = "autodesk123d"
