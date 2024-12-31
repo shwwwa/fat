@@ -126,13 +126,15 @@ struct Arguments {
 }
 
 /// Is zip file is just a wrapper for other file format.
-/// If true, returns id of extension.
+/// If true, returns id of extension. If false, returns "zip" id.
+/// If scanning gives error, returns error.
 fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
     let mut archive = zip::ZipArchive::new(buf_reader).unwrap();
     for i in 0..archive.len() {
         let file = match archive.by_index(i) {
             Ok(file) => file,
             Err(e) => {
+                // We can continue because it still can have some useful files.
                 println!("Error when scanning zip - {}", e);
                 continue;
             }
@@ -181,6 +183,16 @@ fn get_complex_zip_id(buf_reader: BufReader<File>) -> Result<String, Error> {
     Ok("zip".to_string())
 }
 
+/// Is zip file is just a wrapper for other file format.
+/// If true, returns extension string. If false, returns "zip" extension.
+/// If scanning gives error, returns error.
+fn get_complex_zip_extension(args: &Arguments, buf_reader: BufReader<File>) -> Result<String, Error> {
+    match get_complex_zip_id(buf_reader) {
+        Ok(id) => get_extension_from_id(args, id),
+        Err(e) => Err(e)
+    }
+}
+/// Gets generic file info like time properties.
 fn get_general_info(args: &Arguments){
     println!("## General information:");
     println!("# Name: {}",args.file_path.file_name().unwrap().to_string_lossy());
@@ -202,8 +214,8 @@ fn get_general_info(args: &Arguments){
     else { println!("# Readable and writable");}
 }
 
-/// Contain extension data as global to minimize calls --- TODO URGENT
-fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
+/// Gets `ExtensionVec` by reading Extensions.toml.
+fn get_extension_vec(args: &Arguments) -> ExtensionVec{
     let extensions_str = match fs::read_to_string(args.extensions_path.clone()) {
         Ok(c) => c,
         Err(_) => {
@@ -213,7 +225,23 @@ fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
         }
     };
 
-    let mut extension_vec: ExtensionVec = toml::from_str(&extensions_str).unwrap();
+    let extension_vec: ExtensionVec = toml::from_str(&extensions_str).unwrap();
+    extension_vec
+}
+
+/// Gets extension from it's id from Extensions.toml. Errors if not found.
+fn get_extension_from_id(args: &Arguments, id: String) -> Result<String, Error> {
+    let mut extension_vec = get_extension_vec(args);
+    for extension_data in extension_vec.extensions.iter_mut() {
+        if extension_data.id != id {continue};
+        return Ok(extension_data.extension.clone());
+    }
+    Err(Error::new(std::io::ErrorKind::NotFound, "extension was not found by looking through extensions file!"))
+}
+
+/// Contain extension data as global to minimize calls --- TODO URGENT
+fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
+    let mut extension_vec = get_extension_vec(args);
     for extension_data in extension_vec.extensions.iter_mut() {
         if extension_data.extension != extension.to_str().unwrap() {continue};
         return extension_data.name.clone();
@@ -221,6 +249,7 @@ fn get_extension_name(args: &Arguments, extension: &OsStr) -> String {
     "unknown type".to_string()
 }
 
+/// Gets extension info from Extensions.toml from file.
 fn get_extension_info(args: & Arguments, extension: String) {
     println!("## Extension: {}", extension);
     let extensions_str = match fs::read_to_string(args.extensions_path.clone()) {
@@ -255,6 +284,7 @@ fn get_extension_info(args: & Arguments, extension: String) {
     }
 }
 
+/// Gets specified rar info about file.
 fn get_rar_info(args: &Arguments) {
     println!("## RAR information");
     let mut option = None;
@@ -287,6 +317,7 @@ fn get_rar_info(args: &Arguments) {
     }
 }
 
+/// Gets specified zip info about file.
 fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
     println!("## ZIP information");
     let mut archive = zip::ZipArchive::new(buf_reader).unwrap();
@@ -386,6 +417,7 @@ fn get_zip_info(args: &Arguments, buf_reader: BufReader<File>) {
     println!()
 }
 
+/// Gets info about file.
 fn get_info(args: &Arguments) {
     if !args.file_path.exists() { 
         println!("Path to file does not exist.");
@@ -401,10 +433,11 @@ fn get_info(args: &Arguments) {
     
     if !args.ignore_general {get_general_info(args)};
     let mut extension = file_extension.to_str().unwrap_or("").to_string();
-    // TODOL handling if id does not match extension
-    if extension == "zip" {
+    
+    // Now we scan zip data to find some complex types.
+    if extension.eq("zip") {
         // If it's a zip, we might need to check for more complex zip types
-        extension = match get_complex_zip_id(buf_reader) {
+        extension = match get_complex_zip_extension(args, buf_reader) {
             Ok(extension) => extension.to_string(),
             Err(e) => {
                 println!("## Unreadable zip file: {}", e);
@@ -422,6 +455,7 @@ fn get_info(args: &Arguments) {
     }
 }
 
+/// Boot function.
 fn main() {
     // Console arguments
     let m = Command::new("fat")
