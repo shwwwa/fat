@@ -454,6 +454,13 @@ fn main() {
                 .help("Prints help (this message).")
         )
         .arg(
+            Arg::new("gui")
+            .action(ArgAction::SetTrue)
+                .short('g')
+                .long("gui")
+                .help("Opens W.I.P GUI mode.")
+        )
+        .arg(
             Arg::new("extension-info")
             .action(ArgAction::SetTrue)
                 .short('e')
@@ -485,7 +492,7 @@ fn main() {
             Arg::new("only-general")
             .action(ArgAction::SetTrue)
                 .long("only-general")
-                .short('g')
+                .short('o')
                 .help("Provide only special info e.g basic extension info, special metadata of file... (when with ignore-general provides only info of extension)")
         )
         .after_help("This app was written to analyze files, and give as much info about it as possible")
@@ -499,6 +506,7 @@ fn main() {
     let args = Arguments {
         file_path,
         extensions_path,
+        gui: m.get_flag("gui"),
         is_debug: m.get_flag("debug"),
         is_human: m.get_flag("human"),
         only_general: m.get_flag("only-general"),
@@ -508,18 +516,22 @@ fn main() {
     if args.is_debug {
         println!("Path to file: {:?}", &args.file_path);
     }
+    
+    if args.gui {
+        let app = app::App::default();
+        let mut wind = Window::new(100, 100, 400, 300, "FAT-RS v0.1.1");
+        Frame::new(0, 0, 400, 200, "Program to analyze files");
+        let mut but = Button::new(160, 210, 80, 40, "Load");
+        wind.end();
+        wind.show();
 
-    // GUI interface (for now)
-    let app = app::App::default();
-    let mut wind = Window::new(100, 100, 400, 300, "FAT-RS v0.1.1");
-    Frame::new(0, 0, 400, 200, "Program to analyze files");
-    let mut but = Button::new(160, 210, 80, 40, "Load");
-    wind.end();
-    wind.show();
+        // On pressing button we get info about file (selected from above)
+        but.set_callback(move |_| get_info(&args));
 
-    // On pressing button we get info about file (selected from above)
-    but.set_callback(move |_| get_info(&args));
-
-    app.run().unwrap();
+        app.run().unwrap();
+    }
+    else {
+        get_info(&args);
+    }
 }
 

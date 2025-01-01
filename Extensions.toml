@@ -1,5 +1,6 @@
 # Maybe do a thing with most common cases to sort? (by id, lower id, more common file)
 # Maybe later add a line with recommended programs to open with?
+# Support for multiple extensions under same id? (if files are almost exact)
 [[extensions]]
 id = "zip"
 extension = "zip"

@@ -14,6 +14,7 @@ mod tests {
         Arguments {
             file_path,
             extensions_path,
+            gui: false,
             is_debug: true,
             is_human: false,
             only_general: false,
