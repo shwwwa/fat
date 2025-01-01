@@ -24,13 +24,12 @@ http://fileformats.archiveteam.org/ - contains a lot of useful info about file f
 # Contributing
 
 Feel free to contribute! If you detect a bug, open an issue.
-
 Pull requests are also welcome!
 
 # Help
 
-If you need help using the library, feel free to create a new discussion or open an issue.
+If you need help using the program, feel free to create a new discussion or open an issue.
 
 # License
 
-MIT license, do what you want.
+MIT
