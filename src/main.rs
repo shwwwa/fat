@@ -1,129 +1,18 @@
 extern crate bytesize;
 
+mod tests;
+mod components;
+
+use crate::components::{Arguments, ExtensionVec};
 use bytesize::ByteSize;
 use clap::{arg, Arg, ArgAction, Command};
 use fltk::app::quit;
 use fltk::{app, button::Button, frame::Frame, prelude::*, window::Window};
-use serde::{Deserialize, Deserializer};
-use serde_derive::Deserialize;
-use std::io::{BufReader, Error};
-use std::str::FromStr;
-use std::{env, ffi::OsStr, fs, fs::File, path::PathBuf, time::SystemTime};
-use strum_macros::{EnumString, IntoStaticStr};
+#[allow(unused_imports)]
+use std::{env, io::{BufReader, Error}, str::FromStr, ffi::OsStr, fs, fs::File, path::PathBuf, time::SystemTime};
 use time::OffsetDateTime;
 use unrar::{ListSplit, VolumeInfo};
 use zip::{CompressionMethod, DateTime};
-
-/// The difference with file-format lib is that we need as much accurate representation of types as possible,
-/// whereas in file_format categories used for quick choice of formats needed for application (why do you need other file's backups for regular app?).
-#[derive(Debug, PartialEq, EnumString, IntoStaticStr)]
-#[strum(ascii_case_insensitive)]
-enum Category {
-    /// Files and directories stored in a single, possibly compressed, archive .
-    Archive,
-    /// Music, sounds, recordings, identifiers of music, music trackers, ringtones, sound card related formats, speech synthesis.
-    Audio,
-    /// Backup files of applications
-    Backup,
-    /// Calendar type of files
-    Calendar,
-    /// Compressed single files or streams.
-    Compressed,
-    /// Configuration files.
-    Config,
-    /// Address books and contacts.
-    Contacts,
-    /// Electronic currencies e.g. bitcoin, gas.
-    Currency,
-    /// Organized collections of data.
-    Database,
-    /// Visual information using graphics and spatial relationships.
-    Diagram,
-    /// Floppy disk images, optical disc images and virtual machine disks.
-    Disk,
-    /// Word processing and desktop publishing documents.
-    Document,
-    /// Electronic books.
-    Ebook,
-    /// Machine-executable code, virtual machine code and shared libraries.
-    Executable,
-    /// Typefaces used for displaying text on screen or in print.
-    Font,
-    /// Mathematical formulas.
-    Formula,
-    /// Game data files (not configs, but saves fe.)
-    Gamedata,
-    /// Collections of geospatial features, GPS tracks and other location-related files.
-    Geospatial,
-    /// Haptic effect files
-    Haptics,
-    /// Help files, man pages, etc..
-    Help,
-    /// Animations, animated images, raster/vector graphics, icons, cursors.
-    Image,
-    /// Installer files
-    Installer,
-    /// Data that provide information about another data.
-    Metadata,
-    /// 3D images, CAD/CAM drawings, other type of files used for creating and displaying 3D images.
-    Model,
-    /// Agriculture, etc.. other types of files
-    Other,
-    /// Collections of files bundled together for easier distribution.
-    Package,
-    /// Lists of audio or video files, organized in a specific order for sequential playback.
-    Playlist,
-    /// Slideshows.
-    Presentation,
-    /// Copies of a read-only memory chip of computers, cartridges, or other electronic devices.
-    Rom,
-    /// Temporary application files
-    Temporary,
-    /// Data in tabular form.
-    Spreadsheet,
-    /// Annotation formats, subtitles and captions.
-    Subtitle,
-    /// Video stream/container formats, application formats, television broadcast formats.
-    Video,
-}
-
-impl<'de> Deserialize<'de> for Category {
-    fn deserialize<D>(de: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let category = String::deserialize(de)?;
-        Ok(Category::from_str(&category).unwrap_or(Category::Other))
-    }
-}
-
-#[derive(Deserialize, Debug)]
-struct Extension {
-    #[allow(dead_code)]
-    id: String,
-    extension: String,
-    name: String,
-    category: Category,
-    description: String,
-    further_reading: String,
-    preferred_mime: String,
-    mime: Vec<String>,
-}
-
-#[derive(Deserialize, Debug)]
-struct ExtensionVec {
-    extensions: Vec<Extension>,
-}
-
-pub struct Arguments {
-    file_path: PathBuf,
-    extensions_path: PathBuf,
-    is_debug: bool,
-    is_human: bool,
-    only_general: bool,
-    ignore_general: bool,
-    extension_info: bool,
-}
 
 /// Is zip file is just a wrapper for other file format.
 /// If true, returns id of extension. If false, returns "zip" id.
@@ -634,67 +523,3 @@ fn main() {
     app.run().unwrap();
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use rstest::*;
-
-    #[fixture]
-    #[once]
-    fn once_fixture() -> Arguments {
-        let file_path = PathBuf::from_str(r"samples\recognition\zip\").unwrap();
-        // Getting path to extensions.toml (forced to use env::current_dir())
-        let mut extensions_path = env::current_dir().unwrap().clone();
-        extensions_path.push("Extensions.toml");
-        Arguments {
-            file_path,
-            extensions_path,
-            is_debug: true,
-            is_human: false,
-            only_general: false,
-            ignore_general: false,
-            extension_info: false,
-        }
-    }
-
-    #[rstest]
-    #[case::threemf("3mf")]
-    #[case::one23dx("123dx")]
-    #[case::aab("aab")]
-    #[case::air("air")]
-    #[case::apk("apk")]
-    #[case::appx("appx")]
-    #[case::appxbundle("appxbundle")]
-    #[case::cddx("cddx")]
-    #[case::docx("docx")]
-    #[case::dwfx("dwfx")]
-    #[case::ear("ear")]
-    #[case::f3d("f3d")]
-    #[case::fbx("fbz")]
-    #[case::fla("fla")]
-    #[case::ipa("ipa")]
-    #[case::jar("jar")]
-    #[case::kmz("kmz")]
-    #[case::pptx("pptx")]
-    #[case::scdoc("scdoc")]
-    #[case::sketch("sketch")]
-    #[case::usdz("usdz")]
-    #[case::vsdx("vsdx")]
-    #[case::vsix("vsix")]
-    #[case::war("war")]
-    #[case::xap("xap")]
-    #[case::xlsx("xlsx")]
-    #[case::xpi("xpi")]
-    #[case::xps("xps")]
-    fn recognition_tests(once_fixture: &Arguments, #[case] extension: String) {
-        let mut file_path = once_fixture.file_path.clone();
-        file_path.push(format!("{}.zip", extension));
-
-        let buf_reader: BufReader<fs::File> = BufReader::new(fs::File::open(file_path).unwrap());
-
-        assert_eq!(
-            get_complex_zip_extension(&once_fixture, buf_reader).unwrap(),
-            extension
-        );
-    }
-}
