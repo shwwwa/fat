@@ -9,6 +9,7 @@ Right now it only supports zip/rar archives (it still can provide general info a
 
 # Roadmap
 
+Develop proper RAR archiver.
 Building CLI, then GUI.
 Print only needed info.
 Support of modules, extensive library of all extensions that exist in this world (even if nobody uses them, kind of save-history project)
