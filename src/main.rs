@@ -9,7 +9,10 @@ use crate::components::{Arguments, ExtensionVec};
 use bytesize::ByteSize;
 use clap::{arg, Arg, ArgAction, Command};
 use fltk::app::quit;
-use fltk::{app, button::Button, frame::Frame, prelude::*, window::Window};
+use fltk::utils::oncelock::Lazy;
+use fltk::{enums::*, menu, text, dialog, window};
+use fltk::{app, prelude::*, group};
+
 #[allow(unused_imports)]
 use std::{
     env,
@@ -208,10 +211,269 @@ fn get_info(args: &Arguments) {
     }
 }
 
+/** GUI */
+
+const WIDTH: i32 = 800;
+const HEIGHT: i32 = 600;
+static STATE: Lazy<app::GlobalState<State>> = Lazy::new(app::GlobalState::<State>::get);
+
+pub struct State {
+    pub saved: bool,
+    pub buffer: text::TextBuffer,
+    pub current_file: PathBuf,
+}
+
+impl State {
+    fn new(buffer: text::TextBuffer) -> Self {
+        State {
+            saved: true,
+            buffer,
+            current_file: PathBuf::new(),
+        }
+    }
+}
+
+fn init_menu(m: &mut menu::SysMenuBar) {
+    m.add(
+        "&File/&New...\t",
+        Shortcut::Ctrl | 'n',
+        menu::MenuFlag::Normal,
+        menu_cb,
+    );
+    m.add(
+        "&File/&Open...\t",
+        Shortcut::Ctrl | 'o',
+        menu::MenuFlag::Normal,
+        menu_cb,
+    );
+    m.add(
+        "&File/&Save\t",
+        Shortcut::Ctrl | 's',
+        menu::MenuFlag::Normal,
+        menu_cb,
+    );
+    m.add(
+        "&File/Save &as...\t",
+        Shortcut::Ctrl | 'w',
+        menu::MenuFlag::MenuDivider,
+        menu_cb,
+    );
+    let idx = m.add(
+        "&File/&Quit\t",
+        Shortcut::Ctrl | 'q',
+        menu::MenuFlag::Normal,
+        menu_cb,
+    );
+    m.at(idx).unwrap().set_label_color(Color::Red);
+    m.add(
+        "&Edit/Cu&t\t",
+        Shortcut::Ctrl | 'x',
+        menu::MenuFlag::Normal,
+        menu_cb,
+    );
+    m.add(
+        "&Edit/&Copy\t",
+        Shortcut::Ctrl | 'c',
+        menu::MenuFlag::Normal,
+        menu_cb,
+    );
+    m.add(
+        "&Edit/&Paste\t",
+        Shortcut::Ctrl | 'v',
+        menu::MenuFlag::Normal,
+        menu_cb,
+    );
+    m.add(
+        "&Analyze\t",
+        Shortcut::Shift | 'a',
+        menu::MenuFlag::Normal,
+        menu_cb,
+    );
+    m.add(
+        "&Help/&About\t",
+        Shortcut::None,
+        menu::MenuFlag::Normal,
+        menu_cb,
+    );
+}
+
+pub fn center() -> (i32, i32) {
+    (
+        (app::screen_size().0 / 2.0) as i32,
+        (app::screen_size().1 / 2.0) as i32, 
+    )
+}
+
+fn nfc_get_file(mode: dialog::NativeFileChooserType) -> Option<PathBuf> {
+    let mut nfc = dialog::NativeFileChooser::new(mode);
+    if mode == dialog::NativeFileChooserType::BrowseSaveFile {
+        nfc.set_option(dialog::NativeFileChooserOptions::SaveAsConfirm);
+    } else if mode == dialog::NativeFileChooserType::BrowseFile {
+        nfc.set_option(dialog::NativeFileChooserOptions::NoOptions);
+        nfc.set_filter("*.{txt,rs,toml}");
+    }
+    match nfc.try_show() {
+        Err(e) => {
+            eprintln!("{}", e);
+            None
+        }
+        Ok(a) => match a {
+            dialog::NativeFileChooserAction::Success => {
+                let name = nfc.filename();
+                if name.as_os_str().is_empty() {
+                    dialog::alert(center().0 - 200, center().1 - 100, "Specify a file for plain text analyze!");
+                    None
+                } else {
+                    Some(name)
+                }
+            }
+            dialog::NativeFileChooserAction::Cancelled => None,
+        },
+    }
+}
+
+fn quit_cb() {
+    STATE.with(|s| {
+        if s.saved {
+            app::quit();
+        } else {
+            let c = dialog::choice2_default(
+                "Are you sure you want to exit without saving?",
+                "&Yes",
+                "&No",
+                "",
+            );
+            if c == Some(0) {
+                app::quit();
+            }
+        }
+    });
+}
+
+fn win_cb(_w: &mut window::Window) {
+    if app::event() == Event::Close {
+        quit_cb();
+    }
+}
+
+fn editor_cb(_e: &mut text::TextEditor) {
+    STATE.with(|s| s.saved = false);
+}
+
+fn handle_drag_drop(editor: &mut text::TextEditor) {
+    editor.handle({
+        let mut dnd = false;
+        let mut released = false;
+        let buf = editor.buffer().unwrap();
+        move |_, ev| match ev {
+            Event::DndEnter => {
+                dnd = true;
+                true
+            }
+            Event::DndDrag => true,
+            Event::DndRelease => {
+                released = true;
+                true
+            }
+            Event::Paste => {
+                if dnd && released {
+                    let path = app::event_text();
+                    let path = path.trim();
+                    let path = path.replace("file://", "");
+                    let path = std::path::PathBuf::from(&path);
+                    if path.exists() {
+                        // we use a timeout to avoid pasting the path into the buffer
+                        app::add_timeout3(0.0, {
+                            let mut buf = buf.clone();
+                            move |_| match buf.load_file(&path) {
+                                Ok(_) => (),
+                                Err(e) => dialog::alert_default(&format!(
+                                    "An issue occured while loading the file: {e}"
+                                )),
+                            }
+                        });
+                    }
+                    dnd = false;
+                    released = false;
+                    true
+                } else {
+                    false
+                }
+            }
+            Event::DndLeave => {
+                dnd = false;
+                released = false;
+                true
+            }
+            _ => false,
+        }
+    });
+}
+
+fn menu_cb(m: &mut impl MenuExt) {
+    if let Ok(mpath) = m.item_pathname(None) {
+        let ed: text::TextEditor = app::widget_from_id("ed").unwrap();
+        match mpath.as_str() {
+            "&File/&New...\t" => {
+                STATE.with(|s| {
+                    if !s.buffer.text().is_empty() {
+                        let c = dialog::choice2_default(
+                            "Are you sure you want to clear the buffer?",
+                            "&Yes",
+                            "&No",
+                            "",
+                        );
+                        if c == Some(0) {
+                            s.buffer.set_text("");
+                            s.saved = false;
+                        }
+                    }
+                });
+            }
+            "&File/&Open...\t" => {
+                if let Some(c) = nfc_get_file(dialog::NativeFileChooserType::BrowseFile) {
+                    if let Ok(text) = std::fs::read_to_string(&c) {
+                        STATE.with(move |s| {
+                            s.buffer.set_text(&text);
+                            s.saved = false;
+                            s.current_file = c.clone();
+                        });
+                    }
+                }
+            }
+            "&File/&Save\t" => {
+                STATE.with(|s| {
+                    if !s.saved && s.current_file.exists() {
+                        std::fs::write(&s.current_file, s.buffer.text()).ok();
+                    }
+                });
+            }
+            "&File/Save &as...\t" => {
+                if let Some(c) = nfc_get_file(dialog::NativeFileChooserType::BrowseSaveFile) {
+                    STATE.with(move |s| {
+                        std::fs::write(&c, s.buffer.text()).ok();
+                        s.saved = true;
+                        s.current_file = c.clone();
+                    });
+                }
+            }
+            "&File/&Quit\t" => quit_cb(),
+            "&Edit/Cu&t\t" => ed.cut(),
+            "&Edit/&Copy\t" => ed.copy(),
+            "&Edit/&Paste\t" => ed.paste(),
+            "&Analyze" => {}
+            "&Help/&About\t" => {
+                dialog::message_default("A plain text editor made for rat.")
+            }
+            _ => unreachable!(),
+        }
+    }
+}
+
 /// Boot function.
 fn main() {
     // Console arguments
-    let m = Command::new("fat")
+    let argm = Command::new("fat")
         .author("caffidev, caffidev@gmail.com")
         .version("0.1.1")
         .about("fat - File Analysis Tool, analyzes metadata and tries to guess its extension.")
@@ -270,7 +532,7 @@ fn main() {
         .after_help("This app was written to analyze files, and give as much info about it as possible")
         .get_matches();
 
-    let file_path: PathBuf = m.get_one::<PathBuf>("FILE").unwrap().clone();
+    let file_path: PathBuf = argm.get_one::<PathBuf>("FILE").unwrap().clone();
     // Getting path to extensions.toml (forced to use env::current_dir())
     let mut extensions_path = env::current_dir().unwrap().clone();
     extensions_path.push("Extensions.toml");
@@ -278,28 +540,51 @@ fn main() {
     let args = Arguments {
         file_path,
         extensions_path,
-        gui: m.get_flag("gui"),
-        is_debug: m.get_flag("debug"),
-        is_human: m.get_flag("human"),
-        only_general: m.get_flag("only-general"),
-        ignore_general: m.get_flag("ignore-general"),
-        extension_info: m.get_flag("extension-info"),
+        gui: argm.get_flag("gui"),
+        is_debug: argm.get_flag("debug"),
+        is_human: argm.get_flag("human"),
+        only_general: argm.get_flag("only-general"),
+        ignore_general: argm.get_flag("ignore-general"),
+        extension_info: argm.get_flag("extension-info"),
     };
+
     if args.is_debug {
         println!("Path to file: {:?}", &args.file_path);
     }
 
     if args.gui {
-        let app = app::App::default();
-        let mut wind = Window::new(100, 100, 400, 300, "FAT-RS v0.1.1");
-        Frame::new(0, 0, 400, 200, "Program to analyze files");
-        let mut but = Button::new(160, 210, 80, 40, "Load");
-        wind.end();
-        wind.show();
-
-        // On pressing button we get info about file (selected from above)
-        but.set_callback(move |_| get_info(&args));
-
+        let app = app::App::default().with_scheme(app::Scheme::Oxy);
+        app::get_system_colors();
+    
+        let mut buffer = text::TextBuffer::default();
+        buffer.set_tab_distance(4);
+    
+        let state = State::new(buffer.clone());
+        app::GlobalState::new(state);
+    
+        let mut window = window::Window::default()
+            .with_size(WIDTH, HEIGHT)
+            .with_label("fat 0.3.0");
+        window.set_xclass("fat");
+        {
+            let mut col = group::Flex::default_fill().column();
+            col.set_pad(0);
+            let mut m = menu::SysMenuBar::default();
+            init_menu(&mut m);
+            let mut ed = text::TextEditor::default().with_id("ed");
+            ed.set_buffer(buffer);
+            ed.set_linenumber_width(40);
+            ed.set_text_font(Font::Courier);
+            ed.set_trigger(CallbackTrigger::Changed);
+            ed.set_callback(editor_cb);
+            handle_drag_drop(&mut ed);
+            window.resizable(&col);
+            col.fixed(&m, 30);
+            col.end();
+        }
+        window.end();
+        window.show();
+        window.set_callback(win_cb);
         app.run().unwrap();
     } else {
         get_info(&args);
