@@ -1,6 +1,6 @@
 [package]
 name = "fat"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -30,6 +30,6 @@ serde_derive = "1.0.217"
 unrar = "0.5.7"
 strum_macros = "0.26.4"
 strum = "0.26.3"
-rstest = "0.23.0"
+rstest = "0.24.0"
 kamadak-exif = "0.6.1"
 
