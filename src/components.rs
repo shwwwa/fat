@@ -1,7 +1,7 @@
 use serde::{Deserialize, Deserializer};
 use serde_derive::Deserialize;
+use std::{path::PathBuf, str::FromStr};
 use strum_macros::{EnumString, IntoStaticStr};
-use std::{str::FromStr, path::PathBuf};
 
 /// The difference with file-format lib is that we need as much accurate representation of types as possible,
 /// whereas in file_format categories used for quick choice of formats needed for application (why do you need other file's backups for regular app?).
@@ -68,6 +68,8 @@ pub enum Category {
     Rom,
     /// Temporary application files
     Temporary,
+    /// Source code files.
+    Code,
     /// Data in tabular form.
     Spreadsheet,
     /// Annotation formats, subtitles and captions.

@@ -1,4 +1,3 @@
-
 #[cfg(test)]
 mod tests {
     use crate::*;
@@ -59,7 +58,7 @@ mod tests {
         let buf_reader: BufReader<fs::File> = BufReader::new(fs::File::open(file_path).unwrap());
 
         assert_eq!(
-            get_complex_zip_extension(&once_fixture, buf_reader).unwrap(),
+            crate::zip::get_complex_zip_extension(&once_fixture, buf_reader).unwrap(),
             extension
         );
     }
