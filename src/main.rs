@@ -321,6 +321,7 @@ fn nfc_get_file(mode: dialog::NativeFileChooserType) -> Option<PathBuf> {
             dialog::NativeFileChooserAction::Success => {
                 let name = nfc.filename();
                 if name.as_os_str().is_empty() {
+                    dialog::message_title("fat 0.3.0");
                     dialog::alert(center().0 - 200, center().1 - 100, "Specify a file for plain text analyze!");
                     None
                 } else {
@@ -337,6 +338,7 @@ fn quit_cb() {
         if s.saved {
             app::quit();
         } else {
+            dialog::message_title("fat 0.3.0");
             let c = dialog::choice2_default(
                 "Are you sure you want to exit without saving?",
                 "&Yes",
@@ -417,6 +419,7 @@ fn menu_cb(m: &mut impl MenuExt) {
             "&File/&New...\t" => {
                 STATE.with(|s| {
                     if !s.buffer.text().is_empty() {
+                        dialog::message_title("fat 0.3.0");
                         let c = dialog::choice2_default(
                             "Are you sure you want to clear the buffer?",
                             "&Yes",
@@ -461,8 +464,9 @@ fn menu_cb(m: &mut impl MenuExt) {
             "&Edit/Cu&t\t" => ed.cut(),
             "&Edit/&Copy\t" => ed.copy(),
             "&Edit/&Paste\t" => ed.paste(),
-            "&Analyze" => {}
+            "&Analyze\t" => { dialog::message_default("Just made for testing purposes.") }
             "&Help/&About\t" => {
+                dialog::message_title("fat 0.3.0");
                 dialog::message_default("A plain text editor made for rat.")
             }
             _ => unreachable!(),
@@ -475,7 +479,7 @@ fn main() {
     // Console arguments
     let argm = Command::new("fat")
         .author("caffidev, caffidev@gmail.com")
-        .version("0.1.1")
+        .version("0.3.1")
         .about("fat - File Analysis Tool, analyzes metadata and tries to guess its extension.")
         .disable_help_subcommand(true)
         .disable_help_flag(true)
