@@ -111,7 +111,5 @@ pub struct Arguments {
     pub extensions_path: PathBuf,
     pub is_debug: bool,
     pub is_human: bool,
-    pub only_general: bool,
-    pub ignore_general: bool,
-    pub extension_info: bool,
+    pub more_info: bool,
 }

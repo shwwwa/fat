@@ -2,6 +2,7 @@
 mod tests {
     use crate::*;
     use rstest::*;
+    use std::str::FromStr;
 
     #[fixture]
     #[once]
@@ -15,9 +16,7 @@ mod tests {
             extensions_path,
             is_debug: true,
             is_human: false,
-            only_general: false,
-            ignore_general: false,
-            extension_info: false,
+            more_info: false
         }
     }
 
