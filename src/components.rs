@@ -109,7 +109,6 @@ pub struct ExtensionVec {
 pub struct Arguments {
     pub file_path: PathBuf,
     pub extensions_path: PathBuf,
-    pub gui: bool,
     pub is_debug: bool,
     pub is_human: bool,
     pub only_general: bool,
