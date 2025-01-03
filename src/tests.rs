@@ -16,7 +16,7 @@ mod tests {
             extensions_path,
             is_debug: true,
             is_human: false,
-            more_info: false
+            more_info: false,
         }
     }
 

@@ -163,12 +163,15 @@ fn get_extension_info(args: &Arguments, extension: String) {
 /// Check file's path for availability, returns error if not successful.
 fn check_file_path(args: &Arguments) -> Result<(), Error> {
     match args.file_path.try_exists() {
-        Ok(_) => {},
-        Err(e) => return Err(e)
+        Ok(_) => {}
+        Err(e) => return Err(e),
     }
 
     if !args.file_path.is_file() {
-        return Err(Error::new(std::io::ErrorKind::IsADirectory, "file is a directory"));
+        return Err(Error::new(
+            std::io::ErrorKind::IsADirectory,
+            "file is a directory",
+        ));
     }
 
     Ok(())
@@ -285,11 +288,10 @@ fn initialize(arg_m: &ArgMatches, sub_m: &ArgMatches) -> Arguments {
     let mut extensions_path = env::current_dir().unwrap().clone();
     extensions_path.push("Extensions.toml");
 
-    let mut more_info : bool = false;
+    let mut more_info: bool = false;
     if sub_m.try_contains_id("analyze").is_ok() {
         more_info = sub_m.get_flag("analyze");
-    }
-    else if arg_m.subcommand_name().unwrap() == "analyze" {
+    } else if arg_m.subcommand_name().unwrap() == "analyze" {
         more_info = true
     }
 
@@ -301,7 +303,7 @@ fn initialize(arg_m: &ArgMatches, sub_m: &ArgMatches) -> Arguments {
         more_info,
     };
 
-    if args.is_debug { 
+    if args.is_debug {
         println!("File path: {}", file_path.to_string_lossy());
         println!("Extensions path: {}", extensions_path.to_string_lossy());
     }
@@ -319,21 +321,23 @@ fn main() -> Result<(), Error> {
             // Basic initialization
             let args = initialize(&arg_m, sub_m);
             match check_file_path(&args) {
-                Ok(()) => {},
+                Ok(()) => {}
                 Err(e) => {
                     println!("Error happened when executing recognize command: {:#?}", e);
                     return Ok(());
                 }
             }
-            
-            let file_extension: &std::ffi::OsStr = args.file_path.extension().unwrap_or(OsStr::new(""));
-            let buf_reader: BufReader<fs::File> = BufReader::new(fs::File::open(&args.file_path).unwrap());
+
+            let file_extension: &std::ffi::OsStr =
+                args.file_path.extension().unwrap_or(OsStr::new(""));
+            let buf_reader: BufReader<fs::File> =
+                BufReader::new(fs::File::open(&args.file_path).unwrap());
 
             let mut extension = file_extension.to_str().unwrap_or("").to_string();
 
             // Todo: add more types to scan besides zip one.
             // Now we scan zip data to find some complex types.
-            if extension.eq("zip") || extension.eq("") {
+            if extension.eq("zip") || extension.is_empty() {
                 // If it's a zip, we might need to check for more complex zip types
                 extension = match crate::zip::get_complex_zip_extension(&args, buf_reader) {
                     Ok(extension) => extension.to_string(),
@@ -347,94 +351,95 @@ fn main() -> Result<(), Error> {
             get_extension_info(&args, extension);
 
             Ok(())
-        },
+        }
         // Currently only thing it does it prints info about extension.
         Some(("analyze", sub_m)) => {
             let args = initialize(&arg_m, sub_m);
             match check_file_path(&args) {
-                Ok(()) => {},
+                Ok(()) => {}
                 Err(e) => {
                     println!("Error happened when executing analyze command: {:#?}", e);
                     return Ok(());
                 }
-            }   
+            }
 
-            let file_extension: &std::ffi::OsStr = args.file_path.extension().unwrap_or(OsStr::new(""));
-            
+            let file_extension: &std::ffi::OsStr =
+                args.file_path.extension().unwrap_or(OsStr::new(""));
+
             let extension = file_extension.to_str().unwrap_or("").to_string();
-            
+
             get_extension_info(&args, extension);
             Ok(())
-        },
-        Some(("test", _ )) => {
+        }
+        Some(("test", _)) => {
             println!("currently not implemented");
             Ok(())
-        },
+        }
         Some(("general", sub_m)) => {
             let args = initialize(&arg_m, sub_m);
             match check_file_path(&args) {
-                Ok(()) => {},
+                Ok(()) => {}
                 Err(e) => {
                     println!("Error happened when executing recognize command: {:#?}", e);
                     return Ok(());
                 }
-            }   
+            }
 
             get_general_info(&args);
             Ok(())
-        },
+        }
         Some(("metadata", sub_m)) => {
             // Currently is the same as data
             let args = initialize(&arg_m, sub_m);
             match check_file_path(&args) {
-                Ok(()) => {},
+                Ok(()) => {}
                 Err(e) => {
                     println!("Error happened when executing recognize command: {:#?}", e);
                     return Ok(());
                 }
-            }   
-            
-            let file_extension: &std::ffi::OsStr = args.file_path.extension().unwrap_or(OsStr::new(""));
-            let buf_reader: BufReader<fs::File> = BufReader::new(fs::File::open(&args.file_path).unwrap());
-            
+            }
+
+            let file_extension: &std::ffi::OsStr =
+                args.file_path.extension().unwrap_or(OsStr::new(""));
+            let buf_reader: BufReader<fs::File> =
+                BufReader::new(fs::File::open(&args.file_path).unwrap());
+
             // Specific use-cases (even works for specific files like .apk for listing files)
             if file_extension.eq("zip") {
                 crate::zip::get_zip_info(&args, buf_reader)
-            } 
-            else if file_extension.eq("rar") {
+            } else if file_extension.eq("rar") {
                 crate::rar::get_rar_info(&args)
-            }
-            else {
+            } else {
                 println!("We can't still extract data from anything that is zip or rar archive.");
             }
 
             Ok(())
-        },
+        }
         Some(("data", sub_m)) => {
             let args = initialize(&arg_m, sub_m);
             match check_file_path(&args) {
-                Ok(()) => {},
+                Ok(()) => {}
                 Err(e) => {
                     println!("Error happened when executing recognize command: {:#?}", e);
                     return Ok(());
                 }
-            }   
+            }
 
-            let file_extension: &std::ffi::OsStr = args.file_path.extension().unwrap_or(OsStr::new(""));
-            let buf_reader: BufReader<fs::File> = BufReader::new(fs::File::open(&args.file_path).unwrap());
-            
+            let file_extension: &std::ffi::OsStr =
+                args.file_path.extension().unwrap_or(OsStr::new(""));
+            let buf_reader: BufReader<fs::File> =
+                BufReader::new(fs::File::open(&args.file_path).unwrap());
+
             // Specific use-cases (even works for specific files like .apk for listing files)
             if file_extension.eq("zip") {
                 crate::zip::get_zip_info(&args, buf_reader)
-            } 
-            else if file_extension.eq("rar") {
+            } else if file_extension.eq("rar") {
                 crate::rar::get_rar_info(&args)
-            }
-            else {
+            } else {
                 println!("We can't still extract data from anything that is zip or rar archive.");
             }
             Ok(())
-        },
+        }
         Some(("check", _)) => {
             println!("currently does nothing");
             Ok(())
@@ -443,6 +448,5 @@ fn main() -> Result<(), Error> {
             println!("help and version are currently unused as of v0.5.1");
             Ok(())
         }
-
     }
 }
