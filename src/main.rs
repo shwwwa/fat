@@ -224,13 +224,6 @@ fn main() {
                 .help("Prints help (this message).")
         )
         .arg(
-            Arg::new("gui")
-            .action(ArgAction::SetTrue)
-                .short('g')
-                .long("gui")
-                .help("Opens W.I.P GUI mode.")
-        )
-        .arg(
             Arg::new("extension-info")
             .action(ArgAction::SetTrue)
                 .short('e')
