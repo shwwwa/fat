@@ -70,7 +70,7 @@ fn get_general_info(args: &Arguments) {
     if metadata.permissions().readonly() {
         println!("Readonly");
     } else {
-        println!("# Readable and writable");
+        println!("Readable and writable");
     }
 }
 

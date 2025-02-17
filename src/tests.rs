@@ -49,6 +49,7 @@ mod tests {
     #[case::xlsx("xlsx")]
     #[case::xpi("xpi")]
     #[case::xps("xps")]
+    #[case::zip("zip")]
     fn recognition_tests(once_fixture: &Arguments, #[case] extension: String) {
         let mut file_path = once_fixture.file_path.clone();
         file_path.push(format!("{}.zip", extension));

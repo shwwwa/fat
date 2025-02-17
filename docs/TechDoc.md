@@ -12,8 +12,8 @@ Fat is the ***file analysis tool***. It is divided into following 7 subcommands:
 - [ ] fat check - check for dependencies found in fat (it will eventually depend on somtehing!)
 
 Helper subcommands (may not be implemented):
-- [x] fat help = fat --help but later about submodules
-- [x] fat version = provides version of dependencies?
+- [ ] fat help = fat --help but later about submodules
+- [ ] fat version - provides version of dependencies?
 - [ ] fat list - list of deps?
 - [ ] fat update - looks if update is available (but installs only for deps)
 - [ ] fat install - install dependencies

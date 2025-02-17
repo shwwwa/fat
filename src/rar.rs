@@ -9,7 +9,7 @@ pub fn get_rar_info(args: &Arguments) {
         // Looks like I need to write my own implementations of rar lib
         Ok(archive) => {
             if archive.has_comment() {
-                println!("# Comment: currently not supported",)
+                println!("# Comment: currently not supported")
             }
             if archive.volume_info() != VolumeInfo::None {
                 println!("# This is multi-part archive, it is not supported for now.");
